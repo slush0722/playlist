@@ -6,7 +6,12 @@
   <style>
     @font-face {
       font-family: '여기어때 잘난체 2';
-      src: url('https://cdn.jsdelivr.net/gh/projectnoonnu/noonfonts_one@1.0/yg-jalnan.woff') format('woff');
+      src: url('fonts/Jalnan2.otf') format('opentype');
+    }
+
+    @font-face {
+      font-family: 'Maplestory';
+      src: url('fonts/Maplestory Light.ttf') format('truetype');
     }
 
     body {
@@ -1007,6 +1012,39 @@
     });
 
     let wasClockVisibleBeforeHide = false;
+
+    document.addEventListener('click', (e) => {
+      const clickedElement = e.target;
+    
+      const isInsideUI =
+        mainContainer.contains(clickedElement) ||
+        playlistColumn.contains(clickedElement) ||
+        rotatingWrapper.contains(clickedElement) ||
+        trackInfoBar.contains(clickedElement) ||
+        timeBox.contains(clickedElement) ||
+        clockBox.contains(clickedElement) ||
+        document.querySelector('.audio-controls')?.contains(clickedElement) ||
+        document.querySelector('.volume-control')?.contains(clickedElement);
+    
+      if (isInsideUI) return;
+    
+      if (!hidden) {
+        wasClockVisibleBeforeHide = clockBox.classList.contains('active');
+        fadeOut(mainContainer);
+        fadeOut(playlistColumn);
+        if (wasClockVisibleBeforeHide) {
+          clockBox.classList.remove('active');
+        }
+        hidden = true;
+      } else {
+        fadeIn(mainContainer);
+        fadeIn(playlistColumn);
+        if (wasClockVisibleBeforeHide) {
+          clockBox.classList.add('active');
+        }
+        hidden = false;
+      }
+    });
 
   </script>
 </body>
