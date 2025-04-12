@@ -54,7 +54,8 @@
       display: flex;
       justify-content: space-between;
       align-items: flex-start;
-      padding: 20px 50px;
+      padding: 10px 50px; /* 위 패딩 20px → 10px로 줄임 */
+      margin-top: -75px;   /* 추가로 약간 위로 당기기 */
       z-index: 2;
       position: relative;
     }
@@ -104,19 +105,27 @@
       border: none;
     }
 
-    .icon-grid {
-      display: grid;
-      grid-template-columns: repeat(2, 100px);
-      gap: 20px;
+    .icon-item {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background: #1f1f1f;
+      padding: 8px 10px;
+      width: 100%;
+      height: 80px; /* ✅ 높이 고정 */
+      box-sizing: border-box;
     }
-
+    
     .playButton {
-      width: 100px;
-      cursor: pointer;
-      border: 3px solid #444444;
+      width: 60px; /* ✅ 이미지 크기 조정 */
+      height: 60px;
+      object-fit: cover;
       border-radius: 8px;
-      padding: 5px;
-      background-color: #555555;
+      background-color: #555;
+      cursor: pointer;
+      border: 2px solid #444;
     }
 
     .playlist-column {
@@ -152,16 +161,6 @@
     }
     #volumeSlider {
       width: 120px;
-    }
-
-    .playButton {
-      width: 100px;
-      cursor: pointer;
-      border: 3px solid #444444;
-      border-radius: 8px;
-      padding: 5px;
-      background-color: #555555;
-      transition: transform 0.2s ease; /* 애니메이션 부드럽게 */
     }
     
     .playButton:hover {
@@ -353,14 +352,15 @@
     /* fade 효과 */
     .fade-in {
       opacity: 1;
-      transform: translateX(0);
+      transform: translateX(0) translateY(0); /* y축 이동 제거 */
       pointer-events: auto;
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
+    
     .fade-out {
       opacity: 0;
       pointer-events: none;
-      transform: translateX(0); /* 기본으로 이동은 하지 않음 */
+      transform: translateX(0) translateY(0); /* y축 이동 제거 */
       transition: opacity 0.5s ease, transform 0.5s ease;
     }
 
@@ -369,12 +369,14 @@
       display: none !important;
     }
 
-    /* main-container 이동 */
+    /* 아이콘 왼쪽으로 사라질 때 */
     .main-container.fade-out {
       transform: translateX(-50px);
     }
-    .main-container.fade-in {
-      transform: translateX(0);
+
+    /* 플레이리스트 오른쪽으로 사라질 때 */
+    .playlist-column.fade-out {
+      transform: translateX(50px);
     }
 
     /* playlist-column 이동 */
@@ -387,7 +389,7 @@
 
     #rotatingWrapper {
       position: fixed;
-      top: calc(50% - 40px);
+      top: 45%;
       left: 50%;
       transform: translate(-50%, -50%);
       width: 200px;
@@ -458,6 +460,151 @@
       transform: translateX(-50%) translateY(0);
     }
 
+    @keyframes rollIn {
+      0% {
+        transform: translate(-150%, -45%) rotate(-180deg);
+        opacity: 0;
+      }
+      100% {
+        transform: translate(-50%, -45%) rotate(0deg);
+        opacity: 1;
+      }
+    }
+    
+    #rotatingWrapper.rolling-in {
+      animation: rollIn 1.2s ease-out forwards;
+    }
+
+    .audio-controls button {
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      padding: 8px 10px; /* 버튼 크기 살짝 통일 */
+    }
+    
+    .audio-controls button:hover {
+      transform: scale(1.2);
+    }
+
+    #toggleViewBtn {
+      font-size: 20px;
+      background: none;
+      border: none;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+      padding: 8px 10px; /* 버튼 크기 살짝 통일 */
+    }
+    
+    #toggleViewBtn:hover {
+      transform: scale(1.2);
+    }
+
+    #bottomLeftContainer {
+      position: fixed;
+      bottom: 20px;
+      left: 20px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    
+    #toggleInfoBtn {
+      font-size: 24px;
+      background-color: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      border-radius: 8px;
+      color: white;
+      cursor: pointer;
+      padding: 8px 10px;
+      transition: transform 0.2s ease; /* ✅ 커지는 애니메이션 유지 */
+    }
+  
+    /* ✅ hover 시 커지기만 하고, 색은 변화 없음 */
+    #toggleInfoBtn:hover {
+      transform: scale(1.2);
+      background-color: rgba(0, 0, 0, 0.6);
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      color: white;
+    }
+  
+    #siteInfo {
+      position: absolute;
+      bottom: 50px; /* 🔥 버튼 바로 위에 */
+      left: 50%;
+      transform: translateX(-50%);
+      margin-bottom: 10px;
+      padding: 8px 16px;
+      background-color: rgba(0, 0, 0, 0.7);
+      color: white;
+      font-size: 14px;
+      border-radius: 8px;
+      text-align: center;
+      opacity: 0;
+      pointer-events: none;
+      border: 2px solid rgba(255, 255, 255, 0.4);
+      transition: opacity 0.4s ease, transform 0.4s ease;
+      display: block; /* ✅ 기본 display는 block으로 수정! */
+      z-index: 9999;
+    }
+  
+    /* active일 때는 opacity만 조절 */
+    #siteInfo.active {
+      opacity: 1;
+      pointer-events: auto;
+      transform: translate(-50%, 0);
+    }
+
+    .icon-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border: 2px solid #333;
+      border-radius: 12px;
+      background: #1f1f1f;
+      padding: 10px;
+      margin-bottom: 12px;
+      cursor: pointer;
+      width: 100%;
+      box-sizing: border-box;
+    }
+    
+    .icon-item:hover {
+      background: #333333;
+    }
+    
+    .text-info {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    
+    .song-title {
+      font-weight: bold;
+      color: #ffffff;
+      font-size: 16px;
+    }
+    
+    .song-artist {
+      font-weight: normal;
+      color: #bbbbbb;
+      font-size: 13px;
+    }
+
+    .icon-grid {
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto; /* ✅ 세로 스크롤 */
+      max-height: 550px; /* ✅ 원하는 높이 제한 */
+      padding: 10px;
+      width: 280px; /* ✅ 고정 너비 설정 */
+      box-sizing: border-box;
+    }
+
   </style>
 </head>
 <body>
@@ -477,20 +624,14 @@
     <!-- 전체 메인 컨테이너 -->
     <div class="main-container">
 
-      <!-- 왼쪽: 아이콘 박스 구성 영역 -->
       <div class="icon-column-wrapper">
-
-        <!-- 상단 박스 제목 및 이전/다음 버튼 -->
         <div class="icon-title-bar">
-          <button class="arrow-button" id="prevBtn">⬅️</button> <!-- 이전 박스로 이동 -->
-          <div class="icon-title" id="title">1번</div> <!-- 현재 박스의 제목 표시 -->
-          <button class="arrow-button" id="nextBtn">➡️</button> <!-- 다음 박스로 이동 -->
+          <button class="arrow-button" id="prevBtn">⬅️</button>
+          <div class="icon-title" id="title">인스타 감성</div> <!-- ← 이 부분이 인디음악, 해외팝송 등으로 바뀜 -->
+          <button class="arrow-button" id="nextBtn">➡️</button>
         </div>
-
-        <!-- 아이콘(버튼 이미지)들이 위치할 그리드 -->
-        <div class="icon-grid" id="iconGrid">
-          <!-- JavaScript로 이미지 아이콘들이 삽입됨 -->
-        </div>
+      
+        <div class="icon-grid" id="iconGrid"></div>
       </div>
 
       <!-- 오른쪽: 고정된 Spotify 플레이리스트 영역 -->
@@ -528,11 +669,14 @@
     <div id="trackInfoBar" class="track-info-bar">재생 중: 없음</div>
 
     <div class="audio-controls">
+      <button id="rewindBtn">⏪</button> <!-- 10초 뒤로 -->
       <button id="playPauseBtn">▶️</button>   <!-- 재생/일시정지 버튼 -->
+      <button id="forwardBtn">⏩</button>  <!-- 10초 앞으로 -->
       <button id="stopBtn">⏹️</button>        <!-- 정지 버튼 -->
       <button id="loopBtn">🔁</button>        <!-- 루프 재생 버튼 -->
       <button id="shuffleBtn">🎲</button>     <!-- 셔플 재생 버튼 -->
       <button id="autoShuffleBtn">♾️</button> <!-- 자동 랜덤 재생 -->
+      <button id="toggleViewBtn">🟦</button>
     </div>
   </div>
 
@@ -540,6 +684,15 @@
   <div id="rotatingWrapper">
     <img id="rotatingIcon" src="" alt="Album Art" />
   </div>
+
+  <!-- 좌측 하단에 화살표 버튼 + 정보 박스 -->
+  <div id="bottomLeftContainer" style="position: fixed; bottom: 30px; left: 40px; z-index: 9999;">
+    <button id="toggleInfoBtn">⬆️</button>
+    <div id="siteInfo">
+      Version: 1.2.1<br>
+      Visitors: <span id="visitorCount">0</span>
+    </div>
+  </div>  
 
   <script>
     
@@ -569,60 +722,118 @@
     // 현재 재생 중인 사운드 인덱스 (-1은 재생 중 아님)
     let currentSoundIndex = -1;
 
-    // 사운드와 이미지 데이터
     const data = [
       {
-        title: '1번',
-        sounds: ['sounds/1-1.mp3', 'sounds/1-2.mp3', 'sounds/1-3.mp3', 'sounds/1-4.mp3', 'sounds/1-5.mp3', 'sounds/1-6.mp3'],
-        images: ['images/1-1.png', 'images/1-2.png', 'images/1-3.png', 'images/1-4.png', 'images/1-5.png', 'images/1-6.png']
+        title: '인스타 감성',
+        tracks: [
+          { sound: 'sounds/1-1.mp3', image: 'images/1-1.png', title: "Everything", artist: "작곡가1" },
+          { sound: 'sounds/1-2.mp3', image: 'images/1-2.png', title: "은방울", artist: "작곡가2" },
+          { sound: 'sounds/1-3.mp3', image: 'images/1-3.png', title: "Here with me", artist: "작곡가3" },
+          { sound: 'sounds/1-4.mp3', image: 'images/1-4.png', title: "Come back with me", artist: "작곡가4" },
+          { sound: 'sounds/1-5.mp3', image: 'images/1-5.png', title: "소나기", artist: "작곡가5" },
+          { sound: 'sounds/1-6.mp3', image: 'images/1-6.png', title: "I believe", artist: "작곡가6" },
+          { sound: 'sounds/1-7.mp3', image: 'images/1-7.png', title: "Missing", artist: "Unknown" }
+        ]
       },
       {
-        title: '2번',
-        sounds: ['sounds/2-1.mp3', 'sounds/2-2.mp3', 'sounds/2-3.mp3', 'sounds/2-4.mp3', 'sounds/2-5.mp3', 'sounds/2-6.mp3'],
-        images: ['images/2-1.png', 'images/2-2.png', 'images/2-3.png', 'images/2-4.png', 'images/2-5.png', 'images/2-6.png']
+        title: '해외 팝송',
+        tracks: [
+          { sound: 'sounds/2-1.mp3', image: 'images/2-1.png', title: "Just the two of Us", artist: "작곡가6" },
+          { sound: 'sounds/2-2.mp3', image: 'images/2-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/2-3.mp3', image: 'images/2-3.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/2-4.mp3', image: 'images/2-4.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/2-5.mp3', image: 'images/2-5.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/2-6.mp3', image: 'images/2-6.png', title: "Missing", artist: "Unknown" }
+        ]
       },
       {
-        title: '3번',
-        sounds: ['sounds/3-1.mp3', 'sounds/3-2.mp3', 'sounds/3-3.mp3', 'sounds/3-4.mp3', 'sounds/3-5.mp3', 'sounds/3-6.mp3'],
-        images: ['images/3-1.png', 'images/3-2.png', 'images/3-3.png', 'images/3-4.png', 'images/3-5.png', 'images/3-6.png']
+        title: '신나는 음악',
+        tracks: [
+          { sound: 'sounds/3-1.mp3', image: 'images/3-1.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/3-2.mp3', image: 'images/3-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/3-3.mp3', image: 'images/3-3.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/3-4.mp3', image: 'images/3-4.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/3-5.mp3', image: 'images/3-5.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/3-6.mp3', image: 'images/3-6.png', title: "Missing", artist: "Unknown" }
+        ]
       },
       {
-        title: '4번',
-        sounds: ['sounds/4-1.mp3', 'sounds/4-2.mp3', 'sounds/4-3.mp3', 'sounds/4-4.mp3', 'sounds/4-5.mp3', 'sounds/4-6.mp3'],
-        images: ['images/4-1.png', 'images/4-2.png', 'images/4-3.png', 'images/4-4.png', 'images/4-5.png', 'images/4-6.png']
+        title: '인디음악',
+        tracks: [
+          { sound: 'sounds/4-1.mp3', image: 'images/4-1.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/4-2.mp3', image: 'images/4-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/4-3.mp3', image: 'images/4-3.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/4-4.mp3', image: 'images/4-4.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/4-5.mp3', image: 'images/4-5.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/4-6.mp3', image: 'images/4-6.png', title: "Missing", artist: "Unknown" }
+        ]
       },
       {
-        title: '5번',
-        sounds: ['sounds/5-1.mp3', 'sounds/5-2.mp3', 'sounds/5-3.mp3', 'sounds/5-4.mp3', 'sounds/5-5.mp3', 'sounds/5-6.mp3'],
-        images: ['images/5-1.png', 'images/5-2.png', 'images/5-3.png', 'images/5-4.png', 'images/5-5.png', 'images/5-6.png']
+        title: '발라드',
+        tracks: [
+          { sound: 'sounds/5-1.mp3', image: 'images/5-1.png', title: "Feels", artist: "Unknown" },
+          { sound: 'sounds/5-2.mp3', image: 'images/5-2.png', title: "온리원", artist: "Unknown" },
+          { sound: 'sounds/5-3.mp3', image: 'images/5-3.png', title: "어땠을까", artist: "Unknown" },
+          { sound: 'sounds/5-4.mp3', image: 'images/5-4.png', title: "Galaxy", artist: "Unknown" },
+          { sound: 'sounds/5-5.mp3', image: 'images/5-5.png', title: "미치게 해", artist: "Unknown" },
+          { sound: 'sounds/5-6.mp3', image: 'images/5-6.png', title: "다라리", artist: "Unknown" }
+        ]
+      },
+      {
+        title: '잔잔한 음악',
+        tracks: [
+          { sound: 'sounds/6-1.mp3', image: 'images/6-1.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-2.mp3', image: 'images/6-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-3.mp3', image: 'images/6-3.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-4.mp3', image: 'images/6-4.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-5.mp3', image: 'images/6-5.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-6.mp3', image: 'images/6-6.png', title: "Missing", artist: "Unknown" }
+        ]
       }
     ];
 
     // 아이콘 및 타이틀 로드 함수
     function loadBox(index) {
-      const box = data[index]; // 선택된 박스 정보
-      title.textContent = box.title; // 제목 표시
-      iconGrid.innerHTML = ''; // 기존 아이콘 제거
-
-      // 각 사운드에 대해 이미지 버튼 생성
-      box.sounds.forEach((sound, i) => {
+      const box = data[index];
+      title.textContent = box.title;
+      iconGrid.innerHTML = '';
+    
+      box.tracks.forEach((track) => {
+        const iconWrapper = document.createElement('div');
+        iconWrapper.className = 'icon-item';
+    
         const img = document.createElement('img');
-        img.src = box.images[i]; // 이미지 설정
-
-        // 이미지 로딩 실패 시 대체 이미지
+        img.src = track.image;
         img.onerror = function () {
           img.src = 'images/missing.png';
         };
-
-        img.className = 'playButton'; // 클래스 설정
-        img.addEventListener('click', () => {
-          playSound(sound);      // 클릭 시 해당 사운드 재생
-          currentSoundIndex = i; // 현재 재생 인덱스 저장
+        img.className = 'playButton';
+    
+        const textWrapper = document.createElement('div');
+        textWrapper.className = 'text-info';
+    
+        const titleElem = document.createElement('div');
+        titleElem.className = 'song-title';
+        titleElem.textContent = track.title || "없음";
+    
+        const artistElem = document.createElement('div');
+        artistElem.className = 'song-artist';
+        artistElem.textContent = track.artist || "-";
+    
+        textWrapper.appendChild(titleElem);
+        textWrapper.appendChild(artistElem);
+    
+        iconWrapper.appendChild(img);
+        iconWrapper.appendChild(textWrapper);
+    
+        iconWrapper.addEventListener('click', () => {
+          playSound(track.sound);
         });
-
-        iconGrid.appendChild(img); // 그리드에 이미지 추가
+    
+        iconGrid.appendChild(iconWrapper);
       });
     }
+    
     loadBox(currentIndex); // 초기 박스 로드
 
     // 이전 버튼 클릭 시 이전 박스로 이동
@@ -688,15 +899,15 @@
       loopBtn.textContent = audio.loop ? '🔂' : '🔁';
     });
 
-    // 셔플 버튼
+    // 셔플 버튼 (수정)
     shuffleBtn.addEventListener('click', () => {
-      const validSounds = getValidSounds();
-    
+      const validSounds = getValidSoundsInCurrentBox();
+      
       if (validSounds.length === 0) {
         console.warn('🎲 셔플 가능한 곡이 없습니다!');
         return;
       }
-    
+      
       const randomIndex = Math.floor(Math.random() * validSounds.length);
       const randomSoundPath = validSounds[randomIndex];
       playSound(randomSoundPath);
@@ -784,37 +995,44 @@
     });
 
     const trackNames = {
-      "1-1.mp3": "Everything",
-      "1-2.mp3": "은방울",
-      "1-3.mp3": "Here with me",
-      "1-4.mp3": "Come back with me",
-      "1-5.mp3": "소나기",
-      "1-6.mp3": "I belive",
-      "2-1.mp3": "Just the two of us",
-      "2-2.mp3": "Missing",
-      "2-3.mp3": "Missing",
-      "2-4.mp3": "Missing",
-      "2-5.mp3": "Missing",
-      "2-6.mp3": "Missing",
-      "3-1.mp3": "Missing",
-      "3-2.mp3": "Missing",
-      "3-3.mp3": "Missing",
-      "3-4.mp3": "Missing",
-      "3-5.mp3": "Missing",
-      "3-6.mp3": "Missing",
-      "4-1.mp3": "Missing",
-      "4-2.mp3": "Missing",
-      "4-3.mp3": "Missing",
-      "4-4.mp3": "Missing",
-      "4-5.mp3": "Missing",
-      "4-6.mp3": "Missing",
-      "5-1.mp3": "Feels",
-      "5-2.mp3": "온리원",
-      "5-3.mp3": "어땠을까",
-      "5-4.mp3": "Galaxy",
-      "5-5.mp3": "미치게 해",
-      "5-6.mp3": "다라리리",
-      "missing.mp3": "없음",
+      "1-1.mp3": { title: "Everything", artist: "작곡가1" },
+      "1-2.mp3": { title: "은방울", artist: "작곡가2" },
+      "1-3.mp3": { title: "Here with me", artist: "작곡가3" },
+      "1-4.mp3": { title: "Come back with me", artist: "작곡가4" },
+      "1-5.mp3": { title: "소나기", artist: "작곡가5" },
+      "1-6.mp3": { title: "I believe", artist: "작곡가6" },
+      "1-7.mp3": { title: "Missing", artist: "Unknown" },
+      "2-1.mp3": { title: "Just the two of Us", artist: "Unknown" },
+      "2-2.mp3": { title: "Missing", artist: "Unknown" },
+      "2-3.mp3": { title: "Missing", artist: "Unknown" },
+      "2-4.mp3": { title: "Missing", artist: "Unknown" },
+      "2-5.mp3": { title: "Missing", artist: "Unknown" },
+      "2-6.mp3": { title: "Missing", artist: "Unknown" },
+      "3-1.mp3": { title: "Missing", artist: "Unknown" },
+      "3-2.mp3": { title: "Missing", artist: "Unknown" },
+      "3-3.mp3": { title: "Missing", artist: "Unknown" },
+      "3-4.mp3": { title: "Missing", artist: "Unknown" },
+      "3-5.mp3": { title: "Missing", artist: "Unknown" },
+      "3-6.mp3": { title: "Missing", artist: "Unknown" },
+      "4-1.mp3": { title: "Missing", artist: "Unknown" },
+      "4-2.mp3": { title: "Missing", artist: "Unknown" },
+      "4-3.mp3": { title: "Missing", artist: "Unknown" },
+      "4-4.mp3": { title: "Missing", artist: "Unknown" },
+      "4-5.mp3": { title: "Missing", artist: "Unknown" },
+      "4-6.mp3": { title: "Missing", artist: "Unknown" },
+      "5-1.mp3": { title: "Feels", artist: "Unknown" },
+      "5-2.mp3": { title: "온리원", artist: "Unknown" },
+      "5-3.mp3": { title: "어땠을까", artist: "Unknown" },
+      "5-4.mp3": { title: "Galaxy", artist: "Unknown" },
+      "5-5.mp3": { title: "미치게 해", artist: "Unknown" },
+      "5-6.mp3": { title: "다라리", artist: "Unknown" },
+      "6-1.mp3": { title: "Missing", artist: "Unknown" },
+      "6-2.mp3": { title: "Missing", artist: "Unknown" },
+      "6-3.mp3": { title: "Missing", artist: "Unknown" },
+      "6-4.mp3": { title: "Missing", artist: "Unknown" },
+      "6-5.mp3": { title: "Missing", artist: "Unknown" },
+      "6-6.mp3": { title: "Missing", artist: "Unknown" },
+      "missing.mp3": { title: "없음", artist: "-" }
     }; 
 
     const mainContainer = document.querySelector('.main-container');
@@ -907,24 +1125,39 @@
 
     function playSound(src) {
       const fileName = src.split('/').pop().trim();
-      const displayName = trackNames[fileName] || "없음";
-      currentTrackSrc = src; // 현재 트랙 저장
+      const trackInfo = trackNames[fileName] || { title: "없음", artist: "-" };
+      currentTrackSrc = src;
     
-      // 오디오 설정 및 재생
+      // 1. 🛠️ 트랙 정보 먼저 즉시 반영
+      if (trackInfo && trackInfo.title && trackInfo.artist) {
+        trackInfoBar.textContent = `${trackInfo.title} - ${trackInfo.artist}`;
+      } else {
+        trackInfoBar.textContent = "없음";
+      }
+    
+      // 2. 🛠️ 오디오 재생 준비
       audio.pause();
       audio.currentTime = 0;
       audio.src = src;
     
-      audio.play().then(() => {
-        trackInfoBar.textContent = `재생 중: ${displayName}`;
-      }).catch((err) => {
-        console.error("재생 오류:", err);
-        trackInfoBar.textContent = "재생 중: 없음";
-      });
+      // 3. 🛠️ 굴러오는 애니메이션 (여기는 그대로 500ms 딜레이)
+      rotatingWrapper.classList.remove('rolling-in');
+      void rotatingWrapper.offsetWidth; // 강제 리플로우
+      rotatingWrapper.classList.add('rolling-in');
     
-      updateTimeBox();
       updateRotatingIcon(src);
-      showRotatingIcon();
+      rotatingWrapper.style.display = 'block';
+    
+      setTimeout(() => {
+        audio.play().catch((err) => {
+          console.error("재생 오류:", err);
+          trackInfoBar.textContent = "재생 오류 발생"; // 이건 나중에 에러났을 때만 바뀜
+        });
+    
+        updateTimeBox();
+        rotatingIcon.classList.remove('paused');
+        rotatingIcon.classList.add('rotating');
+      }, 500);
     }    
 
     rotatingIcon.onerror = function () {
@@ -944,44 +1177,39 @@
       btn.textContent = autoShuffle ? '✅' : '♾️';
     
       if (autoShuffle) {
-        playRandomTrack();
+        playRandomTrackInCurrentBox();
       }
     });
     
     // 곡 종료 시 자동 재생
     audio.addEventListener('ended', () => {
       if (autoShuffle) {
-        playRandomTrack();
+        playRandomTrackInCurrentBox();
       }
     });
-
-    // 랜덤 재생 가능한 곡 리스트
-    function getValidSounds() {
-      return data.flatMap(box => box.sounds).filter(sound => {
+    
+    // 현재 박스 안에서 랜덤 재생 가능한 곡 리스트
+    function getValidSoundsInCurrentBox() {
+      const currentBox = data[currentIndex];
+      return currentBox.tracks.map(track => track.sound).filter(sound => {
         const fileName = sound.split('/').pop();
         return trackNames[fileName] && !fileName.includes('missing');
       });
     }
 
-    // 랜덤 곡 재생 함수
-    function playRandomTrack() {
-      const validSounds = getValidSounds();
+    // 현재 박스 안에서 랜덤 곡 재생
+    function playRandomTrackInCurrentBox() {
+      const validSounds = getValidSoundsInCurrentBox();
+      
       if (validSounds.length === 0) {
         console.warn('재생 가능한 곡이 없습니다!');
         return;
       }
-
+      
       const randomIndex = Math.floor(Math.random() * validSounds.length);
       const randomSoundPath = validSounds[randomIndex];
       playSound(randomSoundPath);
     }
-
-    // 곡이 끝났을 때 자동 다음 곡 재생
-    audio.addEventListener('ended', () => {
-      if (autoShuffle) {
-        playRandomTrack();
-      }
-    });
 
     // 회전 이미지 클릭 시 재생중 바 토글
     rotatingWrapper.addEventListener('click', () => {
@@ -1004,47 +1232,62 @@
         clockBox.classList.add('active');
       }
       isClockVisible = !isClockVisible;
+      wasClockVisibleBeforeHide = isClockVisible; // ✅ 여기 추가 (Playlist 클릭할 때도 동기화)
     });
-
+    
     clockBox.addEventListener('click', () => {
       clockBox.classList.remove('active');
       isClockVisible = false;
-    });
+      wasClockVisibleBeforeHide = false; // ✅ ClockBox 클릭할 때도 동기화
+    });    
 
     let wasClockVisibleBeforeHide = false;
 
-    document.addEventListener('click', (e) => {
-      const clickedElement = e.target;
-    
-      const isInsideUI =
-        mainContainer.contains(clickedElement) ||
-        playlistColumn.contains(clickedElement) ||
-        rotatingWrapper.contains(clickedElement) ||
-        trackInfoBar.contains(clickedElement) ||
-        timeBox.contains(clickedElement) ||
-        clockBox.contains(clickedElement) ||
-        document.querySelector('.audio-controls')?.contains(clickedElement) ||
-        document.querySelector('.volume-control')?.contains(clickedElement);
-    
-      if (isInsideUI) return;
-    
+    const rewindBtn = document.getElementById('rewindBtn');
+    const forwardBtn = document.getElementById('forwardBtn');
+
+    // 10초 뒤로 이동
+    rewindBtn.addEventListener('click', () => {
+      if (!isNaN(audio.duration)) {
+        audio.currentTime = Math.max(audio.currentTime - 10, 0);
+        updateTimeText();  // 🔥 이동 즉시 시간 업데이트
+      }
+    });
+
+    // 10초 앞으로 이동
+    forwardBtn.addEventListener('click', () => {
+      if (!isNaN(audio.duration)) {
+        audio.currentTime = Math.min(audio.currentTime + 10, audio.duration);
+        updateTimeText();  // 🔥 이동 즉시 시간 업데이트
+      }
+    });
+
+    const toggleViewBtn = document.getElementById('toggleViewBtn');
+
+    toggleViewBtn.addEventListener('click', () => {
       if (!hidden) {
-        wasClockVisibleBeforeHide = clockBox.classList.contains('active');
         fadeOut(mainContainer);
         fadeOut(playlistColumn);
-        if (wasClockVisibleBeforeHide) {
-          clockBox.classList.remove('active');
-        }
         hidden = true;
       } else {
         fadeIn(mainContainer);
         fadeIn(playlistColumn);
-        if (wasClockVisibleBeforeHide) {
-          clockBox.classList.add('active');
-        }
         hidden = false;
       }
     });
+
+    const toggleInfoBtn = document.getElementById('toggleInfoBtn');
+    const siteInfo = document.getElementById('siteInfo');
+
+    toggleInfoBtn.addEventListener('click', () => {
+      siteInfo.classList.toggle('active');
+    });
+
+    // 방문자 수 (임시 증가 기능)
+    let visitorCount = parseInt(localStorage.getItem('visitorCount') || '0');
+    visitorCount += 1;
+    localStorage.setItem('visitorCount', visitorCount);
+    document.getElementById('visitorCount').textContent = visitorCount;
 
   </script>
 </body>
