@@ -21,6 +21,8 @@
       background: url('background.png') no-repeat center center fixed;
       background-size: cover;
       box-sizing: border-box;
+
+      transition: background-image 0.6s ease-in-out, background-color 0.6s ease-in-out;
     }
 
     body::before {
@@ -38,7 +40,7 @@
 
     .header {
       text-align: center;
-      padding: 35px 0 10px;
+      padding: 60px 0 10px;
       z-index: 2;
       position: relative;
     }
@@ -46,7 +48,7 @@
     .header h1 {
       font-family: '여기어때 잘난체 2', sans-serif;
       font-size: 40px;
-      color: #F1C40F;
+      color: #AEE2FF;
       margin: 0;
     }
 
@@ -392,10 +394,12 @@
       top: 45%;
       left: 50%;
       transform: translate(-50%, -50%);
+      transform-origin: center center;
       width: 200px;
       height: 200px;
       display: none;
       z-index: 9999;
+      transition: transform 0.3s ease;
     }
     
     #rotatingIcon {
@@ -426,10 +430,6 @@
       to {
         transform: rotate(360deg);
       }
-    }
-
-    #rotatingWrapper {
-      transition: transform 0.3s ease;
     }
     
     #rotatingWrapper:hover {
@@ -462,11 +462,11 @@
 
     @keyframes rollIn {
       0% {
-        transform: translate(-150%, -45%) rotate(-180deg);
+        transform: translateX(-150%) translateY(-50%) rotate(-180deg);
         opacity: 0;
       }
       100% {
-        transform: translate(-50%, -45%) rotate(0deg);
+        transform: translateX(-50%) translateY(-50%) rotate(0deg);
         opacity: 1;
       }
     }
@@ -605,6 +605,77 @@
       box-sizing: border-box;
     }
 
+    .background-thumbs {
+      display: flex;
+      flex-direction: row;       /* 👉 수평 정렬 */
+      gap: 10px;
+      margin-left: 10px;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease, transform 0.4s ease;
+      position: absolute;
+      top: 0;
+      left: 100%; /* 버튼 오른쪽에 붙게 */
+      transform: translateX(10px); /* 약간의 거리 주기 */
+    }
+    
+    .background-thumbs.active {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    
+    .bg-thumb {
+      width: 50px;
+      height: 50px;
+      border: 2px solid #aaaaaa;
+      border-radius: 6px;
+      object-fit: cover;
+      cursor: pointer;
+      transition: transform 0.3s;
+      animation: slideInRight 0.4s ease forwards;
+      opacity: 0;
+    }
+    .bg-thumb.selected {
+      border: 3px solid rgb(0, 123, 255); /* 선택된 배경 강조 */
+    }
+    
+    .bg-thumb:hover {
+      transform: scale(1.1);
+    }
+
+    @keyframes slideInRight {
+      0% {
+        transform: translateX(-20px);
+        opacity: 0;
+      }
+      100% {
+        transform: translateX(0px);
+        opacity: 1;
+      }
+    }
+    
+    /* 썸네일이 보일 때 순차적 delay */
+    .background-thumbs.active .bg-thumb:nth-child(1) { animation-delay: 0s; }
+    .background-thumbs.active .bg-thumb:nth-child(2) { animation-delay: 0.1s; }
+    .background-thumbs.active .bg-thumb:nth-child(3) { animation-delay: 0.2s; }
+    .background-thumbs.active .bg-thumb:nth-child(4) { animation-delay: 0.3s; }
+    .background-thumbs.active .bg-thumb:nth-child(5) { animation-delay: 0.4s; }
+
+    #bgOverlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-size: cover;
+      background-repeat: no-repeat;
+      background-position: center center; /* 초기 위치 */
+      z-index: -1;
+      opacity: 0;
+      transition: opacity 0.6s ease;
+      pointer-events: none;
+    }    
+
   </style>
 </head>
 <body>
@@ -627,7 +698,7 @@
       <div class="icon-column-wrapper">
         <div class="icon-title-bar">
           <button class="arrow-button" id="prevBtn">⬅️</button>
-          <div class="icon-title" id="title">인스타 감성</div> <!-- ← 이 부분이 인디음악, 해외팝송 등으로 바뀜 -->
+          <div class="icon-title" id="title">인스타 감성</div>
           <button class="arrow-button" id="nextBtn">➡️</button>
         </div>
       
@@ -689,10 +760,20 @@
   <div id="bottomLeftContainer" style="position: fixed; bottom: 30px; left: 40px; z-index: 9999;">
     <button id="toggleInfoBtn">⬆️</button>
     <div id="siteInfo">
-      Version: 1.2.1<br>
+      Version: 1.3.0<br>
       Visitors: <span id="visitorCount">0</span>
+      Developer: Pascal345<br>
     </div>
-  </div>  
+    <div id="backgroundThumbnails" class="background-thumbs">
+      <img src="background.png" class="bg-thumb" data-bg="background.png" />
+      <img src="images/background/background1.png" class="bg-thumb" data-bg="images/background/background1.png" />
+      <img src="images/background/background2.png" class="bg-thumb" data-bg="images/background/background2.png" />
+      <img src="images/background/background3.png" class="bg-thumb" data-bg="images/background/background3.png" />
+      <img src="images/background/background4.png" class="bg-thumb" data-bg="images/background/background4.png" />
+    </div>
+  </div>
+
+  <div id="bgOverlay"></div>
 
   <script>
     
@@ -726,24 +807,33 @@
       {
         title: '인스타 감성',
         tracks: [
-          { sound: 'sounds/1-1.mp3', image: 'images/1-1.png', title: "Everything", artist: "작곡가1" },
-          { sound: 'sounds/1-2.mp3', image: 'images/1-2.png', title: "은방울", artist: "작곡가2" },
-          { sound: 'sounds/1-3.mp3', image: 'images/1-3.png', title: "Here with me", artist: "작곡가3" },
-          { sound: 'sounds/1-4.mp3', image: 'images/1-4.png', title: "Come back with me", artist: "작곡가4" },
-          { sound: 'sounds/1-5.mp3', image: 'images/1-5.png', title: "소나기", artist: "작곡가5" },
-          { sound: 'sounds/1-6.mp3', image: 'images/1-6.png', title: "I believe", artist: "작곡가6" },
-          { sound: 'sounds/1-7.mp3', image: 'images/1-7.png', title: "Missing", artist: "Unknown" }
+          { sound: 'sounds/1-1.mp3', image: 'images/1-1.png', title: "Everything", artist: "검정치마" },
+          { sound: 'sounds/1-2.mp3', image: 'images/1-2.png', title: "은방울", artist: "DANIEL" },
+          { sound: 'sounds/1-3.mp3', image: 'images/1-3.png', title: "Here with me", artist: "d4vd" },
+          { sound: 'sounds/1-4.mp3', image: 'images/1-4.png', title: "Come back with me", artist: "Siggerr" },
+          { sound: 'sounds/1-5.mp3', image: 'images/1-5.png', title: "소나기", artist: "1968" },
+          { sound: 'sounds/1-6.mp3', image: 'images/1-6.png', title: "I believe", artist: "신승훈" },
+          { sound: 'sounds/1-7.mp3', image: 'images/1-7.png', title: "미치게 해", artist: "범키" },
+          { sound: 'sounds/1-8.mp3', image: 'images/1-8.png', title: "Feels", artist: "Calvin Harris" },
         ]
       },
       {
-        title: '해외 팝송',
+        title: '잔잔한 음악',
         tracks: [
-          { sound: 'sounds/2-1.mp3', image: 'images/2-1.png', title: "Just the two of Us", artist: "작곡가6" },
-          { sound: 'sounds/2-2.mp3', image: 'images/2-2.png', title: "Missing", artist: "Unknown" },
-          { sound: 'sounds/2-3.mp3', image: 'images/2-3.png', title: "Missing", artist: "Unknown" },
-          { sound: 'sounds/2-4.mp3', image: 'images/2-4.png', title: "Missing", artist: "Unknown" },
-          { sound: 'sounds/2-5.mp3', image: 'images/2-5.png', title: "Missing", artist: "Unknown" },
-          { sound: 'sounds/2-6.mp3', image: 'images/2-6.png', title: "Missing", artist: "Unknown" }
+          { sound: 'sounds/2-1.mp3', image: 'images/2-1.png', title: "주저하는 연인들을위해", artist: "잔나비" },
+          { sound: 'sounds/2-2.mp3', image: 'images/2-2.png', title: "She", artist: "잔나비" },
+          { sound: 'sounds/2-3.mp3', image: 'images/2-3.png', title: "Home Sweet Home", artist: "카더가든" },
+          { sound: 'sounds/2-4.mp3', image: 'images/2-4.png', title: "우산", artist: "에픽하이" },
+          { sound: 'sounds/2-5.mp3', image: 'images/2-5.png', title: "Yours", artist: "데이먼스이어" },
+          { sound: 'sounds/2-6.mp3', image: 'images/2-6.png', title: "좋은밤 좋은꿈", artist: "너드커넥션션" },
+          { sound: 'sounds/2-7.mp3', image: 'images/2-7.png', title: "TOMBOY", artist: "오혁" },
+          { sound: 'sounds/2-8.mp3', image: 'images/2-8.png', title: "가을이 오면", artist: "이문세" },
+          { sound: 'sounds/2-9.mp3', image: 'images/2-9.png', title: "취기를 빌려", artist: "산들" },
+          { sound: 'sounds/2-10.mp3', image: 'images/2-10.png', title: "고백", artist: "뜨거운 감자" },
+          { sound: 'sounds/2-11.mp3', image: 'images/2-11.png', title: "눈사람", artist: "정승환" },
+          { sound: 'sounds/2-12.mp3', image: 'images/2-12.png', title: "노을", artist: "다비치" },
+          { sound: 'sounds/2-13.mp3', image: 'images/2-13.png', title: "소녀", artist: "오혁" },
+          { sound: 'sounds/2-14.mp3', image: 'images/2-14.png', title: "위잉위잉", artist: "혁오" }
         ]
       },
       {
@@ -758,7 +848,7 @@
         ]
       },
       {
-        title: '인디음악',
+        title: '힙합',
         tracks: [
           { sound: 'sounds/4-1.mp3', image: 'images/4-1.png', title: "Missing", artist: "Unknown" },
           { sound: 'sounds/4-2.mp3', image: 'images/4-2.png', title: "Missing", artist: "Unknown" },
@@ -771,19 +861,19 @@
       {
         title: '발라드',
         tracks: [
-          { sound: 'sounds/5-1.mp3', image: 'images/5-1.png', title: "Feels", artist: "Unknown" },
-          { sound: 'sounds/5-2.mp3', image: 'images/5-2.png', title: "온리원", artist: "Unknown" },
-          { sound: 'sounds/5-3.mp3', image: 'images/5-3.png', title: "어땠을까", artist: "Unknown" },
-          { sound: 'sounds/5-4.mp3', image: 'images/5-4.png', title: "Galaxy", artist: "Unknown" },
-          { sound: 'sounds/5-5.mp3', image: 'images/5-5.png', title: "미치게 해", artist: "Unknown" },
-          { sound: 'sounds/5-6.mp3', image: 'images/5-6.png', title: "다라리", artist: "Unknown" }
+          { sound: 'sounds/5-1.mp3', image: 'images/5-1.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/5-2.mp3', image: 'images/5-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/5-3.mp3', image: 'images/5-3.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/5-4.mp3', image: 'images/5-4.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/5-5.mp3', image: 'images/5-5.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/5-6.mp3', image: 'images/5-6.png', title: "Missing", artist: "Unknown" }
         ]
       },
       {
-        title: '잔잔한 음악',
+        title: '해외 팝송',
         tracks: [
-          { sound: 'sounds/6-1.mp3', image: 'images/6-1.png', title: "Missing", artist: "Unknown" },
-          { sound: 'sounds/6-2.mp3', image: 'images/6-2.png', title: "Missing", artist: "Unknown" },
+          { sound: 'sounds/6-1.mp3', image: 'images/6-1.png', title: "Just the two of Us", artist: "Bill Withers" },
+          { sound: 'sounds/6-2.mp3', image: 'images/6-2.png', title: "I'm Not The Only One", artist: "Sam Smith" },
           { sound: 'sounds/6-3.mp3', image: 'images/6-3.png', title: "Missing", artist: "Unknown" },
           { sound: 'sounds/6-4.mp3', image: 'images/6-4.png', title: "Missing", artist: "Unknown" },
           { sound: 'sounds/6-5.mp3', image: 'images/6-5.png', title: "Missing", artist: "Unknown" },
@@ -995,45 +1085,60 @@
     });
 
     const trackNames = {
-      "1-1.mp3": { title: "Everything", artist: "작곡가1" },
-      "1-2.mp3": { title: "은방울", artist: "작곡가2" },
-      "1-3.mp3": { title: "Here with me", artist: "작곡가3" },
-      "1-4.mp3": { title: "Come back with me", artist: "작곡가4" },
-      "1-5.mp3": { title: "소나기", artist: "작곡가5" },
-      "1-6.mp3": { title: "I believe", artist: "작곡가6" },
-      "1-7.mp3": { title: "Missing", artist: "Unknown" },
-      "2-1.mp3": { title: "Just the two of Us", artist: "Unknown" },
-      "2-2.mp3": { title: "Missing", artist: "Unknown" },
-      "2-3.mp3": { title: "Missing", artist: "Unknown" },
-      "2-4.mp3": { title: "Missing", artist: "Unknown" },
-      "2-5.mp3": { title: "Missing", artist: "Unknown" },
-      "2-6.mp3": { title: "Missing", artist: "Unknown" },
+      "1-1.mp3": { title: "Everything", artist: "검정치마" },
+      "1-2.mp3": { title: "은방울", artist: "DANIEL" },
+      "1-3.mp3": { title: "Here with me", artist: "d4vd" },
+      "1-4.mp3": { title: "Come back with me", artist: "Siggerr" },
+      "1-5.mp3": { title: "소나기", artist: "1968" },
+      "1-6.mp3": { title: "I believe", artist: "신승훈" },
+      "1-7.mp3": { title: "미치게 해", artist: "범키" },
+      "1-8.mp3": { title: "Feels", artist: "Calvin Harris" },
+    
+      "2-1.mp3": { title: "주저하는 연인들을위해", artist: "잔나비" },
+      "2-2.mp3": { title: "She", artist: "잔나비" },
+      "2-3.mp3": { title: "Home Sweet Home", artist: "카더가든" },
+      "2-4.mp3": { title: "우산", artist: "에픽하이" },
+      "2-5.mp3": { title: "Yours", artist: "데이먼스이어" },
+      "2-6.mp3": { title: "좋은밤 좋은꿈", artist: "너드커넥션션" },
+      "2-7.mp3": { title: "TOMBOY", artist: "오혁" },
+      "2-8.mp3": { title: "가을이 오면", artist: "이문세" },
+      "2-9.mp3": { title: "취기를 빌려", artist: "산들" },
+      "2-10.mp3": { title: "고백", artist: "뜨거운 감자" },
+      "2-11.mp3": { title: "눈사람", artist: "정승환" },
+      "2-12.mp3": { title: "노을", artist: "다비치" },
+      "2-13.mp3": { title: "소녀", artist: "오혁" },
+      "2-14.mp3": { title: "위잉위잉", artist: "혁오" },
+    
       "3-1.mp3": { title: "Missing", artist: "Unknown" },
       "3-2.mp3": { title: "Missing", artist: "Unknown" },
       "3-3.mp3": { title: "Missing", artist: "Unknown" },
       "3-4.mp3": { title: "Missing", artist: "Unknown" },
       "3-5.mp3": { title: "Missing", artist: "Unknown" },
       "3-6.mp3": { title: "Missing", artist: "Unknown" },
+    
       "4-1.mp3": { title: "Missing", artist: "Unknown" },
       "4-2.mp3": { title: "Missing", artist: "Unknown" },
       "4-3.mp3": { title: "Missing", artist: "Unknown" },
       "4-4.mp3": { title: "Missing", artist: "Unknown" },
       "4-5.mp3": { title: "Missing", artist: "Unknown" },
       "4-6.mp3": { title: "Missing", artist: "Unknown" },
-      "5-1.mp3": { title: "Feels", artist: "Unknown" },
-      "5-2.mp3": { title: "온리원", artist: "Unknown" },
-      "5-3.mp3": { title: "어땠을까", artist: "Unknown" },
-      "5-4.mp3": { title: "Galaxy", artist: "Unknown" },
-      "5-5.mp3": { title: "미치게 해", artist: "Unknown" },
-      "5-6.mp3": { title: "다라리", artist: "Unknown" },
-      "6-1.mp3": { title: "Missing", artist: "Unknown" },
-      "6-2.mp3": { title: "Missing", artist: "Unknown" },
+    
+      "5-1.mp3": { title: "Missing", artist: "Unknown" },
+      "5-2.mp3": { title: "Missing", artist: "Unknown" },
+      "5-3.mp3": { title: "Missing", artist: "Unknown" },
+      "5-4.mp3": { title: "Missing", artist: "Unknown" },
+      "5-5.mp3": { title: "Missing", artist: "Unknown" },
+      "5-6.mp3": { title: "Missing", artist: "Unknown" },
+    
+      "6-1.mp3": { title: "Just the two of Us", artist: "Bill Withers" },
+      "6-2.mp3": { title: "I'm Not The Only One", artist: "Sam Smith" },
       "6-3.mp3": { title: "Missing", artist: "Unknown" },
       "6-4.mp3": { title: "Missing", artist: "Unknown" },
       "6-5.mp3": { title: "Missing", artist: "Unknown" },
       "6-6.mp3": { title: "Missing", artist: "Unknown" },
+    
       "missing.mp3": { title: "없음", artist: "-" }
-    }; 
+    };
 
     const mainContainer = document.querySelector('.main-container');
     const playlistColumn = document.querySelector('.playlist-column');
@@ -1168,6 +1273,7 @@
     console.log(audio.src.split('/').pop().trim());  // 파일명만 추출
 
     let autoShuffle = false;
+    let playedTracks = new Set();  // ✅ 재생된 트랙 저장용
 
     document.getElementById('autoShuffleBtn').addEventListener('click', () => {
       autoShuffle = !autoShuffle;
@@ -1177,11 +1283,39 @@
       btn.textContent = autoShuffle ? '✅' : '♾️';
     
       if (autoShuffle) {
+        playedTracks.clear();  // 새롭게 시작할 때는 리셋
         playRandomTrackInCurrentBox();
+      } else {
+        playedTracks.clear();  // ❗ 해제 시에도 리셋
       }
     });
-    
-    // 곡 종료 시 자동 재생
+
+    // 🔁 자동 랜덤 재생 함수 (중복 방지)
+    function playRandomTrackInCurrentBox() {
+      const currentBox = data[currentIndex];
+      const availableTracks = currentBox.tracks.filter(track => {
+        const fileName = track.sound.split('/').pop();
+        return trackNames[fileName] && !fileName.includes('missing') && !playedTracks.has(track.sound);
+      });
+
+      if (availableTracks.length === 0) {
+        console.warn('✅ 모든 트랙이 재생되었습니다.');
+        autoShuffle = false;
+
+        const btn = document.getElementById('autoShuffleBtn');
+        btn.style.color = 'white';
+        btn.textContent = '♾️';
+        return;
+      }
+
+      const randomIndex = Math.floor(Math.random() * availableTracks.length);
+      const selectedTrack = availableTracks[randomIndex];
+
+      playedTracks.add(selectedTrack.sound);  // ✅ 재생 기록 추가
+      playSound(selectedTrack.sound);
+    }
+
+    // ⏹️ 곡 종료 시 자동 다음 트랙 재생
     audio.addEventListener('ended', () => {
       if (autoShuffle) {
         playRandomTrackInCurrentBox();
@@ -1195,20 +1329,6 @@
         const fileName = sound.split('/').pop();
         return trackNames[fileName] && !fileName.includes('missing');
       });
-    }
-
-    // 현재 박스 안에서 랜덤 곡 재생
-    function playRandomTrackInCurrentBox() {
-      const validSounds = getValidSoundsInCurrentBox();
-      
-      if (validSounds.length === 0) {
-        console.warn('재생 가능한 곡이 없습니다!');
-        return;
-      }
-      
-      const randomIndex = Math.floor(Math.random() * validSounds.length);
-      const randomSoundPath = validSounds[randomIndex];
-      playSound(randomSoundPath);
     }
 
     // 회전 이미지 클릭 시 재생중 바 토글
@@ -1278,9 +1398,11 @@
 
     const toggleInfoBtn = document.getElementById('toggleInfoBtn');
     const siteInfo = document.getElementById('siteInfo');
+    const backgroundThumbnails = document.getElementById('backgroundThumbnails');
 
     toggleInfoBtn.addEventListener('click', () => {
       siteInfo.classList.toggle('active');
+      backgroundThumbnails.classList.toggle('active');
     });
 
     // 방문자 수 (임시 증가 기능)
@@ -1288,6 +1410,135 @@
     visitorCount += 1;
     localStorage.setItem('visitorCount', visitorCount);
     document.getElementById('visitorCount').textContent = visitorCount;
+
+    document.querySelectorAll('.bg-thumb').forEach(img => {
+      img.addEventListener('click', () => {
+        const bgPath = img.getAttribute('data-bg');
+    
+        // 배경 이미지 적용
+        document.body.style.backgroundImage = `url('${bgPath}')`;
+      });
+    });
+
+    // 배경별 추천 텍스트 색상
+    const backgroundColorMap = {
+      'background.png': '#AEE2FF', // 기본 배경: 흰색
+      'images/background/background1.png': '#4d3b2f', // 노란 계열
+      'images/background/background2.png': '#cccccc', // 청록 계열
+      'images/background/background3.png': '#FFD166', // 핑크 계열
+      'images/background/background4.png': '#F9B24E', // 하늘색 계열
+    };
+
+    function changeBackgroundSmoothly(imagePath) {
+      const overlay = document.getElementById('bgOverlay');
+      const playlistTitle = document.getElementById('playlist-title');
+    
+      // 배경 위치 결정 (배경 2만 다르게 설정)
+      const position = imagePath.includes('background2.png') ? 'center 85%' : 'center center';
+    
+      // 오버레이에 위치와 배경 적용
+      overlay.style.backgroundImage = `url('${imagePath}')`;
+      overlay.style.backgroundPosition = position;
+      overlay.style.opacity = '1';
+    
+      // 600ms 후 본 배경 교체
+      setTimeout(() => {
+        document.body.style.backgroundImage = `url('${imagePath}')`;
+        document.body.style.backgroundPosition = position;
+        overlay.style.opacity = '0';
+      }, 600);
+    
+      // 텍스트 색상 변경
+      const newColor = backgroundColorMap[imagePath] || '#ffffff';
+      playlistTitle.style.color = newColor;
+    }    
+    
+    // 썸네일 클릭 시 이벤트 연결
+    document.querySelectorAll('.bg-thumb').forEach(img => {
+      img.addEventListener('click', () => {
+        const bgPath = img.getAttribute('data-bg');
+        changeBackgroundSmoothly(bgPath);
+      });
+    });    
+
+    const backgroundPaths = [
+      'background.png',
+      'images/background/background1.png',
+      'images/background/background2.png',
+      'images/background/background3.png',
+      'images/background/background4.png',
+    ];
+
+    let currentBackgroundIndex = 0;
+
+    function updateSelectedThumbnail() {
+      document.querySelectorAll('.bg-thumb').forEach((thumb, index) => {
+        if (index === currentBackgroundIndex) {
+          thumb.classList.add('selected');
+        } else {
+          thumb.classList.remove('selected');
+        }
+      });
+    }
+
+    function changeBackgroundSmoothly(imagePath, index = null) {
+      const overlay = document.getElementById('bgOverlay');
+      const playlistTitle = document.getElementById('playlist-title');
+    
+      // ✨ 배경 먼저 적용해서 깜빡임 방지
+      document.body.style.backgroundImage = `url('${imagePath}')`;
+    
+      // 배경 위치 조정
+      if (imagePath.includes('background2.png')) {
+        document.body.style.backgroundPosition = 'center 85%';
+        overlay.style.backgroundPosition = 'center 85%';
+      } else {
+        document.body.style.backgroundPosition = 'center center';
+        overlay.style.backgroundPosition = 'center center';
+      }
+    
+      // overlay 효과 적용
+      overlay.style.backgroundImage = `url('${imagePath}')`;
+      overlay.style.opacity = '1';
+    
+      // ✨ 텍스트 색상 바로 반영
+      const newColor = backgroundColorMap[imagePath] || '#ffffff';
+      playlistTitle.style.color = newColor;
+    
+      // ✨ 썸네일 테두리 즉시 반영
+      if (index !== null) {
+        currentBackgroundIndex = index;
+        updateSelectedThumbnail();
+      }
+    
+      // 600ms 후 오버레이 사라짐
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+      }, 600);
+    }
+
+    // 썸네일 클릭 시
+    document.querySelectorAll('.bg-thumb').forEach((img, index) => {
+      img.addEventListener('click', () => {
+        const path = img.getAttribute('data-bg');
+        changeBackgroundSmoothly(path, index);
+      });
+    });
+
+    // 화살표 키로 배경 전환
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight') {
+        currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundPaths.length;
+        changeBackgroundSmoothly(backgroundPaths[currentBackgroundIndex], currentBackgroundIndex);
+      }
+      if (e.key === 'ArrowLeft') {
+        currentBackgroundIndex = (currentBackgroundIndex - 1 + backgroundPaths.length) % backgroundPaths.length;
+        changeBackgroundSmoothly(backgroundPaths[currentBackgroundIndex], currentBackgroundIndex);
+      }
+    });
+
+    // 초기 선택 반영
+    updateSelectedThumbnail();
 
   </script>
 </body>
