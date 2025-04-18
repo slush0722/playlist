@@ -669,3 +669,110 @@
     transition: opacity 0.6s ease;
     pointer-events: none;
   }    
+
+  @media only screen and (max-width: 900px) and (orientation: landscape) {
+    .main-container {
+      flex-direction: column; /* 세로 정렬로 변경 */
+      align-items: center;
+      padding: 10px;
+      margin-top: 0;
+    }
+  
+    .icon-column-wrapper,
+    .playlist-column {
+      width: 90%;
+      margin-bottom: 20px;
+    }
+  
+    .playlist-column {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px;
+    }
+  
+    iframe {
+      width: 45%;
+      min-width: 280px;
+      height: 152px;
+      margin: 5px;
+    }
+  
+    .icon-grid {
+      width: 100%;
+      max-height: 400px;
+    }
+  
+    .volume-control,
+    .audio-controls {
+      transform: translateX(-50%) scale(0.9);
+    }
+  
+    #rotatingWrapper {
+      width: 150px;
+      height: 150px;
+      top: 40%;
+    }
+  
+    #trackInfoBar {
+      font-size: 16px;
+    }
+  }
+
+  /* Galaxy S24 Ultra 대응 - 가로 해상도 기준 */
+  @media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
+    /* S24 Ultra 전용 스타일 */
+  
+    .main-container {
+      flex-direction: column;
+      align-items: center;
+      padding: 20px;
+      margin-top: 0;
+      max-width: 1400px;
+      gap: 40px;
+      margin: 0 auto;
+    }
+  
+    .icon-column-wrapper,
+    .playlist-column {
+      width: 90%;
+      margin-bottom: 20px;
+    }
+  
+    .playlist-column {
+      flex-direction: row;
+      flex-wrap: wrap;
+      justify-content: center;
+      padding: 10px;
+    }
+  
+    .icon-grid {
+      max-height: 600px;
+      width: 100%;
+      padding: 15px;
+    }
+  
+    iframe {
+      width: 45%;
+      min-width: 280px;
+      height: 152px;
+      margin: 5px;
+    }
+  
+    .volume-control,
+    .audio-controls {
+      transform: translateX(-50%) scale(0.95);
+      font-size: 20px;
+      gap: 18px;
+    }
+  
+    #rotatingWrapper {
+      width: 220px;
+      height: 220px;
+      top: 42%;
+    }
+  
+    #trackInfoBar {
+      font-size: 18px;
+    }
+  }
