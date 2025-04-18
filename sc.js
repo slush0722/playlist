@@ -137,7 +137,9 @@ const data = [
       { sound: 'assets/sounds/6-35.mp3', image: 'assets/images/6-35.png', title: "Viva La Vida", artist: "Coldplay" },
       { sound: 'assets/sounds/6-36.mp3', image: 'assets/images/6-36.png', title: "High Hopes", artist: "Panic! At The Disco" },
       { sound: 'assets/sounds/6-37.mp3', image: 'assets/images/6-37.png', title: "Waiting For Love", artist: "Avicii" },
-      { sound: 'assets/sounds/6-38.mp3', image: 'assets/images/6-38.png', title: "Dragostea din tei", artist: "O-Zone" }
+      { sound: 'assets/sounds/6-38.mp3', image: 'assets/images/6-38.png', title: "Dragostea din tei", artist: "O-Zone" },
+      { sound: 'assets/sounds/6-39.mp3', image: 'assets/images/6-39.png', title: "Warriors", artist: "Imagine Dragons" },
+      { sound: 'assets/sounds/6-40.mp3', image: 'assets/images/6-40.png', title: "Call Me Maybe", artist: "Carly Rae Jepsen" }
     ]
   }
 ];
@@ -435,6 +437,8 @@ const trackNames = {
   "6-36.mp3": { title: "High Hopes", artist: "Panic! At The Disco" },
   "6-37.mp3": { title: "Waiting For Love", artist: "Avicii" },
   "6-38.mp3": { title: "Dragostea din tei", artist: "O-Zone" },
+  "6-39.mp3": { title: "Warriors", artist: "Imagine Dragons" },
+  "6-40.mp3": { title: "Call Me Maybe", artist: "Carly Rae Jepsen" },
 
   "missing.mp3": { title: "없음", artist: "-" }
 };
