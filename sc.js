@@ -726,6 +726,8 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
+const CURRENT_VERSION = "1.4.0 Beta 5.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
+
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
 if (!deviceId) {
@@ -745,6 +747,13 @@ if (!deviceSet.has(deviceId)) {
 
   deviceSet.add(deviceId);
   localStorage.setItem('knownDevices', JSON.stringify([...deviceSet]));
+}
+
+const savedVersion = localStorage.getItem('appVersion');
+if (savedVersion !== CURRENT_VERSION) {
+  localStorage.setItem('appVersion', CURRENT_VERSION);
+  localStorage.removeItem('visitorCount');
+  localStorage.removeItem('knownDevices');
 }
 
 document.getElementById('visitorCount').textContent = visitorCount;
