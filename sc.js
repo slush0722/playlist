@@ -726,8 +726,8 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.0 Release";  // ✨ HTML의 버전과 정확히 일치시킬 것
-ealse
+const CURRENT_VERSION = "1.4.1";  // ✨ HTML의 버전과 정확히 일치시킬 것
+
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
 if (!deviceId) {
@@ -823,7 +823,6 @@ const backgroundPaths = [
   'assets/images/background/background5.png',
   'assets/images/background/background6.png',
   'assets/images/background/background7.png',
-  'assets/images/background/background8.png'
 ];
 
 let currentBackgroundIndex = 0;
