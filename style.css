@@ -781,6 +781,7 @@
     font-size: 22px;
     margin-bottom: 0;
     transform: translateY(-12px);
+    transition: color 0.3s ease;
   }
 
   .playlist-column iframe {
