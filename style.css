@@ -687,7 +687,7 @@
   /* 아이콘 바 / 플레이리스트 바 크기 줄이기 */
   .icon-column-wrapper,
   .playlist-column {
-    width: 36%;
+    width: 20%;
     margin: 0;
   }
 
