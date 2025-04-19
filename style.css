@@ -622,13 +622,14 @@
     width: 50px;
     height: 50px;
     border: 2px solid #aaaaaa;
-    border-radius: 50%;
-    overflow: hidden;             /* ✅ 내부 내용도 둥글게 자르기 */
-    object-fit: cover;            /* ✅ 이미지가 박스를 꽉 채우도록 */
+    border-radius: 12px;
+    object-fit: cover;
     cursor: pointer;
     transition: transform 0.3s;
     animation: slideInRight 0.4s ease forwards;
-    opacity: 0;
+    opacity: 1;
+    pointer-events: auto; /* ✅ 클릭 허용 */
+    z-index: 1;           /* ✅ 상위에 표시 */
   }
 
   .bg-thumb.selected {
