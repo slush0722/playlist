@@ -721,61 +721,73 @@
   }
 
   /* S24 Ultra 대응 */
-  @media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
-    /* S24 Ultra 전용 스타일 - 좌우 정렬 */
-    .main-container {
-      flex-direction: row; /* ⬅️ 좌우 정렬로 복구 */
-      align-items: flex-start;
-      justify-content: center;
-      gap: 40px;
-      padding: 20px;
-      max-width: 1400px;
-      margin: 0 auto;
-    }
-  
-    .icon-column-wrapper,
-    .playlist-column {
-      width: 45%; /* ⬅️ 작게 줄이되 좌우 배치 유지 */
-      margin: 0;
-    }
-  
-    .playlist-column {
-      flex-direction: column;
-      padding: 0;
-    }
-  
-    .icon-grid {
-      max-height: 600px;
-      width: 100%;
-      padding: 15px;
-    }
-  
-    iframe {
-      width: 100%;
-      height: 100px;
-      margin-bottom: 10px;
-    }
-  
-    .volume-control,
-    .audio-controls {
-      transform: translateX(-50%) scale(0.95);
-      font-size: 18px;
-      gap: 16px;
-    }
-  
-    /* ✅ 돌아가는 이미지 크기 줄이기 (기존 비율 유지) */
-    #rotatingWrapper {
-      width: 180px;
-      height: 180px;
-      top: 42%;
-    }
-  
-    #trackInfoBar {
-      font-size: 18px;
-    }
-  
-    #playlist-title {
-      font-size: 40px;
-      margin-bottom: 10px;
-    }
+/* S24 Ultra 전용 (가로 모드, 터치기기) */
+@media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
+  .main-container {
+    flex-direction: row;
+    align-items: flex-start;
+    justify-content: center;
+    gap: 30px;
+    padding: 10px;
+    max-width: 1280px; /* ✅ 더 줄임 */
+    margin: 0 auto;
   }
+
+  .icon-column-wrapper,
+  .playlist-column {
+    width: 40%; /* ✅ 기본보다 더 작게 */
+    margin: 0;
+  }
+
+  .icon-grid {
+    max-height: 480px;
+    width: 100%;
+    padding: 10px;
+  }
+
+  .playlist-column {
+    flex-direction: column;
+    padding: 0;
+  }
+
+  iframe {
+    width: 100%;
+    height: 90px;
+    margin-bottom: 8px;
+  }
+
+  .volume-control,
+  .audio-controls {
+    transform: translateX(-50%) scale(0.8); /* ✅ 더 작게 */
+    font-size: 16px;
+    gap: 14px;
+  }
+
+  #rotatingWrapper {
+    width: 160px;
+    height: 160px;
+    top: 43%;
+  }
+
+  #trackInfoBar {
+    font-size: 16px;
+  }
+
+  #playlist-title {
+    font-size: 36px;
+    margin-bottom: 8px;
+  }
+
+  .playButton img {
+    width: 80px !important;
+    height: auto;
+  }
+
+  .icon-track-title {
+    font-size: 13px;
+  }
+
+  .icon-track-artist {
+    font-size: 11px;
+  }
+}
