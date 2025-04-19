@@ -675,7 +675,7 @@
   .main-container {
     flex-direction: row;
     align-items: flex-start;
-    justify-content: space-between; /* ✅ 좌우 배치 */
+    justify-content: space-between;
     gap: 20px;
     padding: 10px 40px;
     max-width: 1400px;
@@ -690,12 +690,12 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-height: 350px; /* ✅ 더 줄임 */
-    overflow-y: auto;
+    max-height: 250px; /* ✅ 동일한 높이 제한 */
+    overflow-y: auto;  /* ✅ 스크롤 가능하게 */
   }
 
   .icon-title-bar .icon-title {
-    font-size: 13px; /* ✅ 제목 더 작게 */
+    font-size: 13px;
     padding: 3px;
   }
 
@@ -750,9 +750,10 @@
   }
 
   .playlist-column iframe {
-    height: 50px; /* ✅ 아주 작게 */
+    height: 50px;
     width: 100%;
     margin-bottom: 5px;
+    flex-shrink: 0; /* ✅ 줄어들지 않도록 고정 */
   }
 
   #rotatingWrapper {
