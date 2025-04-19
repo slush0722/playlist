@@ -691,11 +691,19 @@
     display: none;
   }
 
-/* S24 Ultra 전용 (가로 모드, 터치기기) */
-@media only screen and (max-width: 1024px),
-       only screen and (orientation: portrait),
-       only screen and (pointer: coarse) {
-        
+/* ✅ 모바일 기기 공통 - 배경 썸네일용 */
+@media only screen and (pointer: coarse) {
+  .desktop-only {
+    display: none;
+  }
+
+  .mobile-only {
+    display: inline-block;
+  }
+}
+
+/* ✅ 모바일 가로 모드 전용 - UI 위치 조정 등 */
+@media only screen and (max-width: 1024px) and (orientation: landscape) {
   .main-container {
     flex-direction: row;
     align-items: flex-start;
@@ -714,8 +722,8 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    max-height: 250px; /* ✅ 동일한 높이 제한 */
-    overflow-y: auto;  /* ✅ 스크롤 가능하게 */
+    max-height: 250px;
+    overflow-y: auto;
   }
 
   .icon-title-bar .icon-title {
@@ -768,23 +776,23 @@
   }
 
   #playlist-title {
-  text-align: center;        /* ✅ 중앙 정렬 */
-  width: 100%;
-  font-size: 22px;
-  margin-bottom: 0;
-  transform: translateY(-12px);
-}
+    text-align: center;
+    width: 100%;
+    font-size: 22px;
+    margin-bottom: 0;
+    transform: translateY(-12px);
+  }
 
   .playlist-column iframe {
-    width: 100%;               /* ✅ 꽉 차게 보이도록 */
-    max-width: 100%;           /* ✅ 혹시라도 넘는 걸 방지 */
-    height: 80px;       /* ✅ 바 전체보다 조금 작게 */
+    width: 100%;
+    max-width: 100%;
+    height: 80px;
     margin-bottom: 5px;
     flex-shrink: 0;
-    display: block;        /* ✅ 가운데 정렬을 위해 block */
-    margin-left: auto;     /* ✅ 가운데 정렬 */
-    margin-right: auto;    /* ✅ 가운데 정렬 */
-  }  
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+  }
 
   #rotatingWrapper {
     width: 90px;
@@ -813,7 +821,7 @@
     font-size: 11px;
     z-index: 9999;
   }
-  
+
   #clock-box {
     position: fixed;
     bottom: 5px;
@@ -822,7 +830,7 @@
     font-size: 11px;
     z-index: 9999;
   }
-  
+
   .time-box {
     position: fixed;
     bottom: 5px;
@@ -832,17 +840,8 @@
     z-index: 9999;
     transition: opacity 0.5s ease, transform 0.5s ease;
   }
-  
-  /* 애니메이션 시 약간만 올라오게 */
+
   .time-box.active {
     transform: translateX(-50%) translateY(-4px);
-  }
-
-  .desktop-only {
-    display: none;
-  }
-
-  .mobile-only {
-    display: inline-block;
   }
 }
