@@ -744,14 +744,17 @@
   }
 
   #playlist-title {
-    font-size: 22px;
-    margin-bottom: 0;
-    transform: translateY(-12px);
-  }
+  text-align: center;        /* ✅ 중앙 정렬 */
+  width: 100%;
+  font-size: 22px;
+  margin-bottom: 0;
+  transform: translateY(-12px);
+}
 
   .playlist-column iframe {
-    height: 80px;          /* 기존보다 조금 더 줄임 */
-    width: 90%;            /* ✅ 바 전체보다 조금 작게 */
+    width: 100%;               /* ✅ 꽉 차게 보이도록 */
+    max-width: 100%;           /* ✅ 혹시라도 넘는 걸 방지 */
+    height: 80px;       /* ✅ 바 전체보다 조금 작게 */
     margin-bottom: 5px;
     flex-shrink: 0;
     display: block;        /* ✅ 가운데 정렬을 위해 block */
@@ -779,16 +782,20 @@
   }
 
   #trackInfoBar {
-    font-size: 12px;
-    bottom: 55px;
+    font-size: 11px;           /* ✅ 글씨 더 작게 */
+    bottom: 30px;              /* ✅ 더 아래 */
   }
-
+  
   #clock-box {
-    font-size: 12px;
-    bottom: 32px;
+    font-size: 11px;           /* ✅ 글씨 더 작게 */
+    bottom: 10px;              /* ✅ 더 아래 */
   }
 
   .time-box {
-    transform: translateY(10px);
+    transform: translateY(4px); /* ✅ 아주 살짝만 내려오게 */
+  }
+  
+  .time-box.active {
+    transform: translateY(0);
   }
 }
