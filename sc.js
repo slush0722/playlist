@@ -726,8 +726,8 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.0 Beta 13.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
-
+const CURRENT_VERSION = "1.4.0 Release";  // ✨ HTML의 버전과 정확히 일치시킬 것
+ealse
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
 if (!deviceId) {
@@ -883,8 +883,4 @@ document.addEventListener("DOMContentLoaded", () => {
 // Service Worker 등록 코드 예시
 navigator.serviceWorker.register('/sw.js').then(reg => {
   reg.update(); // ✅ 수동으로 업데이트 요청
-});
-
-window.addEventListener("load", () => {
-  document.getElementById("customSplash")?.remove();
 });
