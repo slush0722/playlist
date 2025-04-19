@@ -782,17 +782,29 @@
   }
 
   #trackInfoBar {
-    font-size: 11px;           /* ✅ 글씨 더 작게 */
-    bottom: 50px;              /* ✅ 더 아래 */
+    position: fixed;
+    font-size: 11px;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
   }
   
   #clock-box {
-    font-size: 11px;           /* ✅ 글씨 더 작게 */
-    bottom: 60px;              /* ✅ 더 아래 */
+    position: fixed;
+    font-size: 11px;
+    bottom: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 9999;
   }
 
   .time-box {
-    transform: translateY(4px); /* ✅ 아주 살짝만 내려오게 */
+    position: fixed;
+    transform: translateY(2px);
+    bottom: 5px;
+    left: 50%;
+    transform: translate(-50%, 0);
   }
   
   .time-box.active {
