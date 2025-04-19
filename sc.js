@@ -726,7 +726,7 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.1";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.4.2";  // ✨ HTML의 버전과 정확히 일치시킬 것
 
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
