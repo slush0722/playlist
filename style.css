@@ -783,12 +783,12 @@
 
   #trackInfoBar {
     font-size: 11px;           /* ✅ 글씨 더 작게 */
-    bottom: 30px;              /* ✅ 더 아래 */
+    bottom: 50px;              /* ✅ 더 아래 */
   }
   
   #clock-box {
     font-size: 11px;           /* ✅ 글씨 더 작게 */
-    bottom: 10px;              /* ✅ 더 아래 */
+    bottom: 60px;              /* ✅ 더 아래 */
   }
 
   .time-box {
