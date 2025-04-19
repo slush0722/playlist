@@ -763,8 +763,8 @@
   }  
 
   #rotatingWrapper {
-    width: 120px;
-    height: 120px;
+    width: 90px;
+    height: 90px;
     top: 37%;
   }
 
@@ -812,5 +812,28 @@
   /* 애니메이션 시 약간만 올라오게 */
   .time-box.active {
     transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+/* ✅ 모든 기기에서 공통 배경은 항상 보이게 유지 */
+.desktop-backgrounds {
+  display: block;
+}
+
+/* ✅ 모바일 전용 배경은 기본적으로 숨김 */
+.mobile-backgrounds {
+  display: none;
+}
+
+/* ✅ S24 Ultra와 같은 터치 기반 3200px 이하 해상도일 때 */
+@media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
+  /* ✅ 공통 배경도 계속 보이고 */
+  .desktop-backgrounds {
+    display: block;
+  }
+
+  /* ✅ 모바일 전용 배경만 추가로 보임 */
+  .mobile-backgrounds {
+    display: block;
   }
 }
