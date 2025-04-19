@@ -779,9 +779,9 @@ const backgroundColorMap = {
   'assets/images/background/background7.png': '#2d4c80',
   'assets/images/background/background8.png': '#ffe399',
   'assets/images/background/mobile1.png': '#FFEBBB',
-  'assets/images/background/mobile2.png': '#5A4530',
+  'assets/images/background/mobile2.png': '#9CD3FF',
   'assets/images/background/mobile3.png': '#FFF0D4',
-  'assets/images/background/mobile4.png': '#9CD3FF',
+  'assets/images/background/mobile4.png': '#FFED73',
   'assets/images/background/mobile5.png': '#FFD9A2'
 };
 
