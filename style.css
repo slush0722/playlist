@@ -783,31 +783,34 @@
 
   #trackInfoBar {
     position: fixed;
-    font-size: 11px;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 11px;
     z-index: 9999;
   }
   
   #clock-box {
     position: fixed;
-    font-size: 11px;
     bottom: 5px;
     left: 50%;
     transform: translateX(-50%);
+    font-size: 11px;
     z-index: 9999;
   }
-
+  
   .time-box {
     position: fixed;
-    transform: translateY(2px);
     bottom: 5px;
     left: 50%;
-    transform: translate(-50%, 0);
+    transform: translateX(-50%);
+    font-size: 11px;
+    z-index: 9999;
+    transition: opacity 0.5s ease, transform 0.5s ease;
   }
   
+  /* 애니메이션 시 약간만 올라오게 */
   .time-box.active {
-    transform: translateY(0);
+    transform: translateX(-50%) translateY(-4px);
   }
 }
