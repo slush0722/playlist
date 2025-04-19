@@ -726,7 +726,7 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.0 Beta 10.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.4.0 Beta 11.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
 
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
@@ -777,7 +777,12 @@ const backgroundColorMap = {
   'assets/images/background/background5.png': '#c6d4f0',
   'assets/images/background/background6.png': '#ffd478',
   'assets/images/background/background7.png': '#2d4c80',
-  'assets/images/background/background8.png': '#ffe399'
+  'assets/images/background/background8.png': '#ffe399',
+  'assets/images/background/mobile1.png': '#FFEBBB',
+  'assets/images/background/mobile2.png': '#5A4530',
+  'assets/images/background/mobile3.png': '#FFF0D4',
+  'assets/images/background/mobile4.png': '#FFED73',
+  'assets/images/background/mobile5.png': '#FFD9A2'
 };
 
 function changeBackgroundSmoothly(imagePath) {
