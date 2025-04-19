@@ -675,25 +675,28 @@
   /* 전체 레이아웃 조정 */
   .main-container {
     flex-direction: row;
-    align-items: flex-start;
-    justify-content: center;
+    align-items: center; /* ✅ 수직 중앙 정렬 */
+    justify-content: space-between; /* ✅ 좌우 간격 확실하게 */
     gap: 20px;
-    padding: 10px 0;
+    padding: 10px 40px; /* 좌우 공간 확보 */
     max-width: 1400px;
     margin: 0 auto;
-    transform: translateY(-30px); /* ✅ 더 위로 이동 */
+    transform: translateY(-20px);
   }
 
   /* 아이콘 바 / 플레이리스트 바 크기 줄이기 */
   .icon-column-wrapper,
   .playlist-column {
-    width: 20%;
+    width: 22%;
     margin: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
   }
 
   /* 아이콘 그리드 및 내부 아이템 크기 */
   .icon-grid {
-    max-height: 480px;
+    max-height: 460px;
     width: 100%;
     padding: 10px;
   }
@@ -701,71 +704,82 @@
   .icon-item {
     flex-direction: column;
     align-items: center;
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   .icon-item img {
-    width: 50px;
-    height: 50px;
+    width: 45px;
+    height: 45px;
   }
 
   .text-info {
-    font-size: 11px;
+    font-size: 10px;
     text-align: center;
   }
 
   .song-title {
-    font-size: 11px;
+    font-size: 10px;
   }
 
   .song-artist {
-    font-size: 10px;
-    color: #bbb;
+    font-size: 9px;
+    color: #aaa;
   }
 
   /* 화살표 버튼 작게 */
   .arrow-button {
-    font-size: 14px;
-    padding: 3px 6px;
+    font-size: 13px;
+    padding: 2px 5px;
   }
 
   /* playlist 제목 작게 + 위로 */
   #playlist-title {
-    font-size: 28px;
-    margin-bottom: 0px;
-    transform: translateY(-10px); /* ✅ 위로 이동 */
+    font-size: 24px;
+    margin-bottom: 0;
+    transform: translateY(-12px);
   }
 
   /* Spotify iframe 크기 축소 */
   .playlist-column iframe {
-    height: 90px;
+    height: 80px;
     width: 100%;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
   }
 
   /* 돌아가는 이미지 작게 */
   #rotatingWrapper {
-    width: 110px;
-    height: 110px;
-    top: 38%; /* 조금 더 위로 */
+    width: 100px;
+    height: 100px;
+    top: 38%;
   }
 
   /* 볼륨 / 오디오 컨트롤 줄이고 아래로 */
   .volume-control {
-    font-size: 11px;
-    transform: translateX(-50%) scale(0.75);
+    font-size: 10px;
+    transform: translateX(-50%) scale(0.7);
     margin-top: 6px;
   }
 
   .audio-controls {
-    font-size: 13px;
-    gap: 10px;
-    transform: translateX(-50%) scale(0.8);
+    font-size: 12px;
+    gap: 8px;
+    transform: translateX(-50%) scale(0.75);
     margin-top: 8px;
   }
 
   /* 곡 제목 바 (재생 중 표시) */
   #trackInfoBar {
-    font-size: 14px;
+    font-size: 13px;
+    bottom: 70px;
+  }
+
+  /* 현재 시계 표시 박스 */
+  #clock-box {
+    font-size: 13px;
+    bottom: 40px;
+  }
+
+  .time-box {
+    transform: translateY(10px);
   }
 }
