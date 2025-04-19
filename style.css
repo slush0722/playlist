@@ -670,124 +670,69 @@
     pointer-events: none;
   }    
 
-  /* 일반 기기 대응 */
-  @media only screen and (max-width: 900px) and (orientation: landscape) {
-    .main-container {
-      flex-direction: column; /* 세로 정렬로 변경 */
-      align-items: center;
-      padding: 10px;
-      margin-top: 0;
-    }
-  
-    .icon-column-wrapper,
-    .playlist-column {
-      width: 90%;
-      margin-bottom: 20px;
-    }
-  
-    .playlist-column {
-      flex-direction: row;
-      flex-wrap: wrap;
-      justify-content: center;
-      padding: 10px;
-    }
-  
-    iframe {
-      width: 45%;
-      min-width: 280px;
-      height: 152px;
-      margin: 5px;
-    }
-  
-    .icon-grid {
-      width: 100%;
-      max-height: 400px;
-    }
-  
-    .volume-control,
-    .audio-controls {
-      transform: translateX(-50%) scale(0.9);
-    }
-  
-    #rotatingWrapper {
-      width: 150px;
-      height: 150px;
-      top: 40%;
-    }
-  
-    #trackInfoBar {
-      font-size: 16px;
-    }
-  }
-
-  /* S24 Ultra 대응 */
 /* S24 Ultra 전용 (가로 모드, 터치기기) */
-@media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
+@media only screen and (min-width: 2800px) and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
   .main-container {
     flex-direction: row;
     align-items: flex-start;
-    justify-content: center;
+    justify-content: space-between;
     gap: 30px;
-    padding: 10px;
-    max-width: 1280px; /* ✅ 더 줄임 */
+    padding: 10px 40px;
+    max-width: 100%;
     margin: 0 auto;
   }
 
   .icon-column-wrapper,
   .playlist-column {
-    width: 40%; /* ✅ 기본보다 더 작게 */
-    margin: 0;
+    width: 35%; /* 최대한 작게 */
+    padding: 15px;
   }
 
-  .icon-grid {
-    max-height: 480px;
-    width: 100%;
-    padding: 10px;
+  .icon-item {
+    height: 60px;
+    padding: 6px 8px;
   }
 
-  .playlist-column {
-    flex-direction: column;
-    padding: 0;
+  .song-title {
+    font-size: 13px;
+  }
+
+  .song-artist {
+    font-size: 11px;
+  }
+
+  .playButton {
+    width: 50px;
+    height: 50px;
+  }
+
+  .arrow-button {
+    font-size: 18px;
   }
 
   iframe {
     width: 100%;
-    height: 90px;
-    margin-bottom: 8px;
+    height: 100px;
   }
 
-  .volume-control,
   .audio-controls {
-    transform: translateX(-50%) scale(0.8); /* ✅ 더 작게 */
+    transform: translateX(-50%) scale(0.85);
     font-size: 16px;
-    gap: 14px;
-  }
-
-  #rotatingWrapper {
-    width: 160px;
-    height: 160px;
-    top: 43%;
-  }
-
-  #trackInfoBar {
-    font-size: 16px;
+    gap: 10px;
   }
 
   #playlist-title {
-    font-size: 36px;
-    margin-bottom: 8px;
+    font-size: 28px;
   }
 
-  .playButton img {
-    width: 80px !important;
-    height: auto;
+  #rotatingWrapper {
+    width: 140px;
+    height: 140px;
+    top: 42%;
   }
 
-  .icon-track-title {
-    font-size: 13px;
-  }
-
-  .icon-track-artist {
-    font-size: 11px;
+  #trackInfoBar {
+    font-size: 14px;
+    top: calc(50% + 100px);
   }
 }
