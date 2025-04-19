@@ -141,6 +141,17 @@ const data = [
       { sound: 'assets/sounds/6-39.mp3', image: 'assets/images/6-39.png', title: "Warriors", artist: "Imagine Dragons" },
       { sound: 'assets/sounds/6-40.mp3', image: 'assets/images/6-40.png', title: "Call Me Maybe", artist: "Carly Rae Jepsen" }
     ]
+  },
+  {
+    title: '인디음악',
+    tracks: [
+      { sound: 'assets/sounds/7-1.mp3', image: 'assets/images/7-1.png', title: "Missing", artist: "Unknown" },
+      { sound: 'assets/sounds/7-2.mp3', image: 'assets/images/7-2.png', title: "Missing", artist: "Unknown" },
+      { sound: 'assets/sounds/7-3.mp3', image: 'assets/images/7-3.png', title: "Missing", artist: "Unknown" },
+      { sound: 'assets/sounds/7-4.mp3', image: 'assets/images/7-4.png', title: "Missing", artist: "Unknown" },
+      { sound: 'assets/sounds/7-5.mp3', image: 'assets/images/7-5.png', title: "Missing", artist: "Unknown" },
+      { sound: 'assets/sounds/7-6.mp3', image: 'assets/images/7-6.png', title: "Missing", artist: "Unknown" }
+    ]
   }
 ];
 
@@ -440,6 +451,13 @@ const trackNames = {
   "6-39.mp3": { title: "Warriors", artist: "Imagine Dragons" },
   "6-40.mp3": { title: "Call Me Maybe", artist: "Carly Rae Jepsen" },
 
+  "7-1.mp3": { title: "Missing", artist: "Unknown" },
+  "7-2.mp3": { title: "Missing", artist: "Unknown" },
+  "7-3.mp3": { title: "Missing", artist: "Unknown" },
+  "7-4.mp3": { title: "Missing", artist: "Unknown" },
+  "7-5.mp3": { title: "Missing", artist: "Unknown" },
+  "7-6.mp3": { title: "Missing", artist: "Unknown" },
+
   "missing.mp3": { title: "없음", artist: "-" }
 };
 
@@ -708,10 +726,27 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-// 방문자 수 (임시 증가 기능)
+// 고유 기기 ID 저장 (한 번만 생성됨)
+let deviceId = localStorage.getItem('uniqueDeviceId');
+if (!deviceId) {
+  deviceId = crypto.randomUUID();  // 고유 ID 생성
+  localStorage.setItem('uniqueDeviceId', deviceId);
+}
+
+// 모든 방문한 기기 ID를 저장할 Set
+let knownDevices = JSON.parse(localStorage.getItem('knownDevices') || '[]');
+const deviceSet = new Set(knownDevices);
+
 let visitorCount = parseInt(localStorage.getItem('visitorCount') || '0');
-visitorCount += 1;
-localStorage.setItem('visitorCount', visitorCount);
+
+if (!deviceSet.has(deviceId)) {
+  visitorCount += 1;
+  localStorage.setItem('visitorCount', visitorCount);
+
+  deviceSet.add(deviceId);
+  localStorage.setItem('knownDevices', JSON.stringify([...deviceSet]));
+}
+
 document.getElementById('visitorCount').textContent = visitorCount;
 
 document.querySelectorAll('.bg-thumb').forEach(img => {
