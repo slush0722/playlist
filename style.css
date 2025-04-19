@@ -670,8 +670,32 @@
     pointer-events: none;
   }    
 
+  /* 공통: 썸네일 바 가로 정렬 유지 */
+  .background-thumbs {
+    display: flex;
+    flex-direction: row;         /* 👈 가로로 나열 */
+    flex-wrap: nowrap;           /* 👈 한 줄에 쭉 나열 */
+    overflow-x: auto;            /* 👈 넘치면 스크롤 */
+    overflow-y: hidden;          /* 👈 세로 스크롤 제거 */
+    gap: 6px;
+    padding: 8px 0;
+    white-space: nowrap;
+  }
+
+  /* 데스크탑 전용 */
+  .desktop-only {
+    display: inline-block;
+  }
+
+  .mobile-only {
+    display: none;
+  }
+
 /* S24 Ultra 전용 (가로 모드, 터치기기) */
-@media only screen and (max-width: 3200px) and (orientation: landscape) and (pointer: coarse) {
+@media only screen and (max-width: 1024px),
+       only screen and (orientation: portrait),
+       only screen and (pointer: coarse) {
+        
   .main-container {
     flex-direction: row;
     align-items: flex-start;
@@ -813,24 +837,12 @@
   .time-box.active {
     transform: translateX(-50%) translateY(-4px);
   }
-}
 
-/* ✅ 모든 기기에서 공통 배경은 항상 보이게 유지 */
-.desktop-backgrounds {
-  display: block;
-}
+  .desktop-only {
+    display: none;
+  }
 
-/* ✅ 모바일 전용 배경은 기본적으로 숨김 */
-.mobile-backgrounds {
-  display: none;
-}
-
-/* ✅ 공통 배경도 계속 보이고 */
-.desktop-backgrounds {
-  display: block;
-}
-
-/* ✅ 모바일 전용 배경만 추가로 보임 */
-.mobile-backgrounds {
-  display: block;
+  .mobile-only {
+    display: inline-block;
+  }
 }
