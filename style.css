@@ -602,20 +602,25 @@
   .background-thumbs {
     display: flex;
     flex-direction: row;       /* 👉 수평 정렬 */
-    gap: 10px;
-    margin-left: 10px;
+    flex-wrap: nowrap;         /* 한 줄에 쭉 나열 */
+    overflow-x: auto;          /* 넘치면 스크롤 */
+    overflow-y: hidden;        /* 세로 스크롤 제거 */
+    gap: 6px;
+    padding: 8px 0;
+    white-space: nowrap;
+  
     opacity: 0;
-    pointer-events: none;
+    pointer-events: none; /* 🔥 클릭 막기 */
     transition: opacity 0.3s ease, transform 0.4s ease;
+    transform: translateX(10px); /* 약간 오른쪽으로 이동 */
     position: absolute;
     top: 0;
     left: 100%; /* 버튼 오른쪽에 붙게 */
-    transform: translateX(10px); /* 약간의 거리 주기 */
   }
   
   .background-thumbs.active {
     opacity: 1;
-    pointer-events: auto;
+    pointer-events: auto; /* 🔥 클릭 가능하게 */
   }
   
   .bg-thumb {
@@ -672,18 +677,6 @@
     transition: opacity 0.6s ease;
     pointer-events: none;
   }    
-
-  /* 공통: 썸네일 바 가로 정렬 유지 */
-  .background-thumbs {
-    display: flex;
-    flex-direction: row;         /* 👈 가로로 나열 */
-    flex-wrap: nowrap;           /* 👈 한 줄에 쭉 나열 */
-    overflow-x: auto;            /* 👈 넘치면 스크롤 */
-    overflow-y: hidden;          /* 👈 세로 스크롤 제거 */
-    gap: 6px;
-    padding: 8px 0;
-    white-space: nowrap;
-  }
 
   /* 데스크탑 전용 */
   .desktop-only {
@@ -764,6 +757,7 @@
 
 /* ✅ 모바일 가로 모드 전용 - UI 위치 조정 등 */
 @media only screen and (max-width: 1024px) and (orientation: landscape) {
+  /* 가로모드 UI 레이아웃 */
   .main-container {
     flex-direction: row;
     align-items: flex-start;
@@ -865,49 +859,58 @@
   }
 
   .volume-control {
-    font-size: 9px;
-    transform: translateX(-50%) scale(0.65);
+    font-size: 14px;
+    transform: translateX(-50%) scale(0.9);
     margin-top: 4px;
   }
-
+  
   .audio-controls {
-    font-size: 11px;
-    gap: 6px;
-    transform: translateX(-50%) scale(0.7);
+    font-size: 16px;
+    gap: 10px;
+    transform: translateX(-50%) scale(0.95);
     margin-top: 6px;
   }
-
+  
   #trackInfoBar {
     position: fixed;
     bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
+    font-size: 20px;
+    padding: 12px 26px;
     z-index: 9999;
   }
-
+  
   #clock-box {
     position: fixed;
-    bottom: 5px;
+    bottom: 30px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
+    font-size: 16px;
     z-index: 9999;
   }
-
+  
   .time-box {
     position: fixed;
-    bottom: 5px;
+    bottom: 70px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 11px;
+    font-size: 16px;
     z-index: 9999;
     transition: opacity 0.5s ease, transform 0.5s ease;
-  }
+  }  
 
   .time-box.active {
     transform: translateX(-50%) translateY(-4px);
   }
+
+  #patchNoteSideBtn,
+  #recommendSideBtn {
+    top: calc(50% + 60px); /* 기존보다 위쪽으로 */
+    padding: 14px;
+    font-size: 22px;
+  }
+
 }
 
 /* ✅ 모바일 '세로' 모드일 때만 모바일 배경 표시 */
@@ -917,5 +920,38 @@
   }
   .mobile-only {
     display: inline-block;
+  }
+
+  #patchNoteSideBtn,
+  #recommendSideBtn {
+    top: calc(70%); /* 너무 위로 가있던 거 내려줌 */
+    padding: 12px;
+    font-size: 20px;
+  }
+
+  #trackInfoBar {
+    font-size: 18px;
+    padding: 10px 24px;
+  }
+
+  .volume-control {
+    font-size: 13px;
+    transform: translateX(-50%) scale(0.85);
+  }
+
+  .audio-controls {
+    font-size: 14px;
+    gap: 10px;
+    transform: translateX(-50%) scale(0.9);
+  }
+
+  .time-box {
+    font-size: 14px;
+    bottom: 60px;
+  }
+
+  #clock-box {
+    font-size: 14px;
+    bottom: 20px;
   }
 }
