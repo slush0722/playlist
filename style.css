@@ -601,26 +601,26 @@
 
   .background-thumbs {
     display: flex;
-    flex-direction: row;       /* 👉 수평 정렬 */
-    flex-wrap: nowrap;         /* 한 줄에 쭉 나열 */
-    overflow-x: auto;          /* 넘치면 스크롤 */
-    overflow-y: hidden;        /* 세로 스크롤 제거 */
+    flex-direction: row;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    overflow-y: hidden;
     gap: 6px;
     padding: 8px 0;
     white-space: nowrap;
   
     opacity: 0;
-    pointer-events: none; /* 🔥 클릭 막기 */
+    pointer-events: none;  /* ❗ 기본은 클릭 비활성화 */
     transition: opacity 0.3s ease, transform 0.4s ease;
-    transform: translateX(10px); /* 약간 오른쪽으로 이동 */
+    transform: translateX(10px);
     position: absolute;
     top: 0;
-    left: 100%; /* 버튼 오른쪽에 붙게 */
+    left: 100%;
   }
   
   .background-thumbs.active {
     opacity: 1;
-    pointer-events: auto; /* 🔥 클릭 가능하게 */
+    pointer-events: auto;  /* ❗ 클릭 허용 */
   }
   
   .bg-thumb {
@@ -705,7 +705,7 @@
 
   #patchNoteSideBtn:hover,
   #recommendSideBtn:hover {
-    transform: translateY(-50%) scale(1.15);
+    transform: translateY(-70%) scale(1.15);
   }
 
   #patchNoteSideBtn {
@@ -924,7 +924,7 @@
 
   #patchNoteSideBtn,
   #recommendSideBtn {
-    top: calc(50%); /* 너무 위로 가있던 거 내려줌 */
+    top: calc(70%); /* 너무 위로 가있던 거 내려줌 */
     padding: 22px;
     font-size: 20px;
   }
