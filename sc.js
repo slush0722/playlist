@@ -726,12 +726,22 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.5";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.4.6";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const visitorElement = document.getElementById('visitorCount');
+
+// 버전 변경 시 방문자 기록 초기화
+const savedVersion = localStorage.getItem('appVersion');
+if (savedVersion !== CURRENT_VERSION) {
+  localStorage.setItem('appVersion', CURRENT_VERSION);
+  localStorage.removeItem('visitorCount');
+  localStorage.removeItem('knownDevices');
+  localStorage.removeItem('uniqueDeviceId');  // 고유 ID도 재생성
+}
 
 // 고유 기기 ID 저장 (한 번만 생성됨)
 let deviceId = localStorage.getItem('uniqueDeviceId');
 if (!deviceId) {
-  deviceId = crypto.randomUUID();  // 고유 ID 생성
+  deviceId = crypto.randomUUID();
   localStorage.setItem('uniqueDeviceId', deviceId);
 }
 
@@ -739,24 +749,21 @@ if (!deviceId) {
 let knownDevices = JSON.parse(localStorage.getItem('knownDevices') || '[]');
 const deviceSet = new Set(knownDevices);
 
+// 방문자 수
 let visitorCount = parseInt(localStorage.getItem('visitorCount') || '0');
 
+// 처음 방문한 기기인 경우 증가
 if (!deviceSet.has(deviceId)) {
   visitorCount += 1;
   localStorage.setItem('visitorCount', visitorCount);
-
   deviceSet.add(deviceId);
   localStorage.setItem('knownDevices', JSON.stringify([...deviceSet]));
 }
 
-const savedVersion = localStorage.getItem('appVersion');
-if (savedVersion !== CURRENT_VERSION) {
-  localStorage.setItem('appVersion', CURRENT_VERSION);
-  localStorage.removeItem('visitorCount');
-  localStorage.removeItem('knownDevices');
+// 화면에 출력
+if (visitorElement) {
+  visitorElement.textContent = visitorCount;
 }
-
-document.getElementById('visitorCount').textContent = visitorCount;
 
 document.querySelectorAll('.bg-thumb').forEach(img => {
   img.addEventListener('click', () => {
