@@ -694,6 +694,63 @@
     display: none;
   }
 
+  #patchNoteSideBtn,
+  #recommendSideBtn {
+    position: fixed;
+    top: calc(75% + 110px); /* trackInfoBar의 위치 */
+    transform: translateY(-50%);
+    background-color: rgba(0, 0, 0, 0.75);
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 12px;
+    padding: 10px;
+    font-size: 20px;
+    z-index: 9999;
+    color: white;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+  }
+
+  #patchNoteSideBtn:hover,
+  #recommendSideBtn:hover {
+    transform: translateY(-50%) scale(1.15);
+  }
+
+  #patchNoteSideBtn {
+    left: calc(50% - 320px); /* 왼쪽에 배치 */
+  }
+
+  #recommendSideBtn {
+    left: calc(50% + 270px); /* 오른쪽에 배치 */
+  }
+
+  /* 커스텀 툴팁 공통 스타일 */
+  .custom-tooltip {
+    position: relative;
+    display: inline-block;
+  }
+
+  .custom-tooltip::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 130%; /* 버튼 위에 배치 */
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: rgba(20, 20, 20, 0.9);
+    color: white;
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 6px;
+    white-space: nowrap;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+    z-index: 10000;
+  }
+
+  .custom-tooltip:hover::after {
+    opacity: 1;
+  }
+
 /* ✅ 모바일 기기 공통 - 배경 썸네일용 */
 @media only screen and (pointer: coarse) {
   .desktop-only {
