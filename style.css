@@ -697,11 +697,11 @@
 /* ✅ 모바일 기기 공통 - 배경 썸네일용 */
 @media only screen and (pointer: coarse) {
   .desktop-only {
-    display: none;
+    display: inline-block;
   }
 
   .mobile-only {
-    display: inline-block;
+    display: none;
   }
 }
 
@@ -850,5 +850,15 @@
 
   .time-box.active {
     transform: translateX(-50%) translateY(-4px);
+  }
+}
+
+/* ✅ 모바일 '세로' 모드일 때만 모바일 배경 표시 */
+@media only screen and (pointer: coarse) and (orientation: portrait) {
+  .desktop-only {
+    display: none;
+  }
+  .mobile-only {
+    display: inline-block;
   }
 }
