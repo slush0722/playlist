@@ -924,14 +924,14 @@
 
   #patchNoteSideBtn,
   #recommendSideBtn {
-    top: calc(70%); /* 너무 위로 가있던 거 내려줌 */
-    padding: 12px;
+    top: calc(-70%); /* 너무 위로 가있던 거 내려줌 */
+    padding: 22px;
     font-size: 20px;
   }
 
   #trackInfoBar {
     font-size: 18px;
-    padding: 10px 24px;
+    padding: 20px 34px;
   }
 
   .volume-control {
