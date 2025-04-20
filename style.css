@@ -924,7 +924,7 @@
 
   #patchNoteSideBtn,
   #recommendSideBtn {
-    top: calc(-70%); /* 너무 위로 가있던 거 내려줌 */
+    top: calc(50%); /* 너무 위로 가있던 거 내려줌 */
     padding: 22px;
     font-size: 20px;
   }
