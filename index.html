@@ -3,8 +3,8 @@
 <head>
   <meta charset="UTF-8">
   <title>Pascal Playlist</title>
-  <link rel="icon" href="assets/images/favicon.ico" type="image/x-icon" />
-  <link rel="shortcut icon" href="assets/images/favicon.ico" type="image/x-icon" />
+  <link rel="icon" href="assets/icons/favicon.ico" type="image/x-icon" />
+  <link rel="shortcut icon" href="assets/icons/favicon.ico" type="image/x-icon" />
   <link rel="stylesheet" href="style.css">
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#000000">
@@ -33,6 +33,19 @@
     <!-- 재생 시간 표시 영역 -->
     <div id="time-box" class="time-box"> </div>
     <div id="clock-box" class="time-box"></div>
+
+    <!-- 대기열 표시 영역 -->
+    <div id="queueContainer" class="queue-container">
+      <div class="queue-title-bar">
+        <span class="queue-title">         대기열 [📼]</span>
+        
+        <div class="tooltip-wrapper">
+          <button id="clearQueueBtn" class="clear-queue-btn">🗑️</button>
+          <div class="tooltip">전체삭제</div>
+        </div>
+      </div>
+      <div id="queueList" class="queue-list"></div>
+    </div>    
 
     <!-- 전체 메인 컨테이너 -->
     <div class="main-container">
@@ -115,7 +128,7 @@
   <div id="bottomLeftContainer" style="position: fixed; bottom: 30px; left: 40px; z-index: 9999;">
     <button id="toggleInfoBtn">⬆️</button>
     <div id="siteInfo">
-      Version: 1.4.6<br>
+      Version: 1.5.0 Beta 1.0<br>
       Visitors: <span id="visitorCount">0</span>
       Developer: Pascal345<br>
     </div>
