@@ -1,3 +1,8 @@
+let currentTrackSrc = null;
+
+// 🔝 꼭 맨 위에 있어야 함
+const musicQueue = [];
+
 // HTML 요소들을 가져옴
 const audio = document.getElementById('myAudio');           // 오디오 객체
 const iconGrid = document.getElementById('iconGrid');       // 사운드 버튼 이미지가 들어갈 그리드 영역
@@ -26,7 +31,7 @@ let currentSoundIndex = -1;
 
 const data = [
   {
-    title: '인스타 감성',
+    title: '인스타감성 📷',
     tracks: [
       { sound: 'assets/sounds/1-1.mp3', image: 'assets/images/1-1.png', title: "Everything", artist: "검정치마" },
       { sound: 'assets/sounds/1-2.mp3', image: 'assets/images/1-2.png', title: "은방울", artist: "DANIEL" },
@@ -40,7 +45,7 @@ const data = [
     ]
   },
   {
-    title: '잔잔한 음악',
+    title: '잔잔한음악 💿',
     tracks: [
       { sound: 'assets/sounds/2-1.mp3', image: 'assets/images/2-1.png', title: "주저하는 연인들을위해", artist: "잔나비" },
       { sound: 'assets/sounds/2-2.mp3', image: 'assets/images/2-2.png', title: "She", artist: "잔나비" },
@@ -65,7 +70,7 @@ const data = [
     ]
   },
   {
-    title: '신나는 음악',
+    title: '신나는음악 🎶',
     tracks: [
       { sound: 'assets/sounds/3-1.mp3', image: 'assets/images/3-1.png', title: "Missing", artist: "Unknown" },
       { sound: 'assets/sounds/3-2.mp3', image: 'assets/images/3-2.png', title: "Missing", artist: "Unknown" },
@@ -76,7 +81,7 @@ const data = [
     ]
   },
   {
-    title: '힙합',
+    title: '　 힙합 🎵 　',
     tracks: [
       { sound: 'assets/sounds/4-1.mp3', image: 'assets/images/4-1.png', title: "Missing", artist: "Unknown" },
       { sound: 'assets/sounds/4-2.mp3', image: 'assets/images/4-2.png', title: "Missing", artist: "Unknown" },
@@ -87,7 +92,7 @@ const data = [
     ]
   },
   {
-    title: '발라드',
+    title: '  발라드 🎤  ',
     tracks: [
       { sound: 'assets/sounds/5-1.mp3', image: 'assets/images/5-1.png', title: "Missing", artist: "Unknown" },
       { sound: 'assets/sounds/5-2.mp3', image: 'assets/images/5-2.png', title: "Missing", artist: "Unknown" },
@@ -98,7 +103,7 @@ const data = [
     ]
   },
   {
-    title: '해외 팝송',
+    title: ' 해외팝송 🎸 ',
     tracks: [
       { sound: 'assets/sounds/6-1.mp3', image: 'assets/images/6-1.png', title: "Just the two of Us", artist: "Bill Withers" },
       { sound: 'assets/sounds/6-2.mp3', image: 'assets/images/6-2.png', title: "I'm Not The Only One", artist: "Sam Smith" },
@@ -143,7 +148,7 @@ const data = [
     ]
   },
   {
-    title: '인디음악',
+    title: ' 인디음악 🎧 ',
     tracks: [
       { sound: 'assets/sounds/7-1.mp3', image: 'assets/images/7-1.png', title: "Missing", artist: "Unknown" },
       { sound: 'assets/sounds/7-2.mp3', image: 'assets/images/7-2.png', title: "Missing", artist: "Unknown" },
@@ -189,9 +194,17 @@ function loadBox(index) {
     iconWrapper.appendChild(img);
     iconWrapper.appendChild(textWrapper);
 
+    // ✅ 좌클릭: 즉시 재생 + 현재 트랙 경로 저장
     iconWrapper.addEventListener('click', () => {
       playSound(track.sound);
+      currentTrackSrc = track.sound;
     });
+
+    // ✅ 우클릭: 대기열에 추가
+    iconWrapper.addEventListener('contextmenu', (e) => {
+  e.preventDefault();
+  enqueueTrack(track);
+});
 
     iconGrid.appendChild(iconWrapper);
   });
@@ -200,10 +213,20 @@ function loadBox(index) {
 loadBox(currentIndex); // 초기 박스 로드
 
 // 이전 버튼 클릭 시 이전 박스로 이동
-document.getElementById('prevBtn').addEventListener('click', () => {
-  currentIndex = (currentIndex - 1 + data.length) % data.length; // 인덱스 감소, 순환
-  loadBox(currentIndex);
-});
+const prevBtn = document.getElementById('prevBtn');
+if (prevBtn) {
+  prevBtn.addEventListener('click', () => {
+    if (audio.currentTime <= 1 && previousTrack) {
+      playSound(previousTrack);
+    } else {
+      audio.currentTime = 0;
+    }
+
+    // ✅ 추가: data 인덱스를 순환하며 이전 박스 로드
+    currentIndex = (currentIndex - 1 + data.length) % data.length;
+    loadBox(currentIndex);
+  });
+}
 
 // 다음 버튼 클릭 시 다음 박스로 이동
 document.getElementById('nextBtn').addEventListener('click', () => {
@@ -211,21 +234,29 @@ document.getElementById('nextBtn').addEventListener('click', () => {
   loadBox(currentIndex);
 });
 
-// 전역에서 현재 재생 중인 트랙 경로를 추적
-let currentTrackSrc = null;
-
 let isStopped = false; // 전역에서 선언 필요!
 
 stopBtn.addEventListener('click', () => {
-  playSound('assets/sounds/missing.mp3');
+  audio.pause();
+  audio.currentTime = 0;
+  currentTrackSrc = null;
 
-  // 이미지 설정
+  // 회전 이미지 초기화
   rotatingIcon.src = 'assets/images/missing.png';
   rotatingIcon.classList.remove('rotating', 'paused');
-  document.getElementById('rotatingWrapper').style.display = 'block';
+  rotatingWrapper.classList.remove('rolling-in');
+  rotatingWrapper.style.display = 'block';
 
-  playPauseBtn.textContent = '⏸️';
+  // 트랙 정보 초기화
+  trackInfoBar.textContent = '없음';
+
+  // 재생/정지 아이콘도 초기화
+  playPauseBtn.textContent = '▶️';
+
+  // 시간 바 초기화
+  timeBox.textContent = '0:00 / 0:00';
 });
+
 
 // 재생 버튼 동작
 playPauseBtn.addEventListener('click', () => {
@@ -323,9 +354,6 @@ setInterval(() => {
     updateTimeText();
   }
 }, 500);
-
-// 현재 시간은 항상 업데이트
-setInterval(updateClockText, 1000);
 
 // 오디오 재생 시간 박스 표시
 function updateTimeBox() {
@@ -516,6 +544,11 @@ document.addEventListener('keydown', (e) => {
 window.addEventListener('DOMContentLoaded', () => {
   mainContainer.classList.add('fade-in');
   playlistColumn.classList.add('fade-in');
+
+  rotatingWrapper.style.display = 'block';
+  rotatingWrapper.style.opacity = '1'; // ✅ 이 줄 추가
+  rotatingIcon.src = 'assets/images/missing.png';
+  rotatingIcon.classList.remove('rotating', 'paused');
 });
 
 const rotatingWrapper = document.getElementById('rotatingWrapper');
@@ -549,42 +582,56 @@ function updateRotatingIcon(source) {
   rotatingIcon.src = imagePath;
 }
 
+let previousTrack = null;
+
 function playSound(src) {
   const fileName = src.split('/').pop().trim();
   const trackInfo = trackNames[fileName] || { title: "없음", artist: "-" };
+
+  // 🔁 이전 트랙 저장
+  if (currentTrackSrc && currentTrackSrc !== src) {
+    previousTrack = currentTrackSrc;
+  }
+
+  // 현재 트랙 경로 저장
   currentTrackSrc = src;
 
-  // 1. 🛠️ 트랙 정보 먼저 즉시 반영
+  // 앨범아트 갱신
+  updateAlbumArt();
+
+  // 트랙 정보 바 업데이트
   if (trackInfo && trackInfo.title && trackInfo.artist) {
     trackInfoBar.textContent = `${trackInfo.title} - ${trackInfo.artist}`;
   } else {
     trackInfoBar.textContent = "없음";
   }
 
-  // 2. 🛠️ 오디오 재생 준비
+  // 오디오 초기화 및 재생 준비
   audio.pause();
   audio.currentTime = 0;
   audio.src = src;
 
-  // 3. 🛠️ 굴러오는 애니메이션 (여기는 그대로 500ms 딜레이)
+  // 회전 애니메이션 트리거
   rotatingWrapper.classList.remove('rolling-in');
   void rotatingWrapper.offsetWidth; // 강제 리플로우
   rotatingWrapper.classList.add('rolling-in');
 
+  // 회전 아이콘 업데이트
   updateRotatingIcon(src);
   rotatingWrapper.style.display = 'block';
 
+  // 재생 시작
   setTimeout(() => {
     audio.play().catch((err) => {
       console.error("재생 오류:", err);
-      trackInfoBar.textContent = "재생 오류 발생"; // 이건 나중에 에러났을 때만 바뀜
+      trackInfoBar.textContent = "재생 오류 발생";
     });
 
-    updateTimeBox();
+    updateTimeBox(); // 시간 동기화
     rotatingIcon.classList.remove('paused');
     rotatingIcon.classList.add('rotating');
   }, 500);
-}    
+}
 
 rotatingIcon.onerror = function () {
   rotatingIcon.src = 'assets/images/missing.png';
@@ -726,7 +773,7 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.4.6";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.5.0 Beta 1.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
 const visitorElement = document.getElementById('visitorCount');
 
 // 버전 변경 시 방문자 기록 초기화
@@ -854,7 +901,6 @@ function changeBackgroundSmoothly(imagePath, index = null) {
   // ✅ 썸네일 선택 상태 갱신
   if (index !== null) {
     currentBackgroundIndex = index;
-    updateSelectedThumbnail();
   }
 
   // 600ms 후 오버레이 제거
@@ -881,6 +927,8 @@ updateSelectedThumbnail();
 document.addEventListener("DOMContentLoaded", () => {
     const rotatingIcon = document.getElementById("rotatingIcon");
     const rotatingWrapper = document.getElementById("rotatingWrapper");
+    const queueContainer = document.getElementById('queueContainer');
+    const queueList = document.getElementById('queueList');
   
     rotatingIcon.src = 'assets/images/missing.png';
     rotatingWrapper.style.display = 'block';
@@ -896,5 +944,194 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(reg => console.log('SW registered', reg))
       .catch(err => console.error('SW registration failed', err));
+  });
+}
+
+// 대기열에 추가
+function enqueueTrack(track) {
+  console.log("[enqueueTrack] Called", track);
+
+  if (!track || !track.sound) {
+    console.warn("[enqueueTrack] Invalid track", track);
+    return;
+  }
+
+  const title = (track.title || "").trim();
+  const artist = (track.artist || "").trim();
+
+  // 🔒 "Missing - Unknown" 제외
+  if (title === "Missing" && artist === "Unknown") {
+    console.warn("[enqueueTrack] 'Missing - Unknown' 곡은 대기열에 추가되지 않습니다.");
+    return;
+  }
+
+  // 🗑️ 동일한 곡이 이미 있다면 제거 (추가하지 않음)
+  const index = musicQueue.findIndex(t => t.sound === track.sound);
+  if (index !== -1) {
+    console.log("[enqueueTrack] 이미 존재하는 곡이라 삭제:", track.title);
+    musicQueue.splice(index, 1);
+    updateQueueUI(); // UI 갱신 필수
+    return; // 새로 추가는 하지 않음
+  }
+
+  // 📥 대기열에 새로 추가
+  musicQueue.push(track);
+  updateQueueUI();
+
+  if (!currentTrackSrc || currentTrackSrc.includes('missing')) {
+    console.log("[enqueueTrack] No currentTrackSrc, playing next from queue");
+    playNextFromQueue();
+  } else {
+    console.log("[enqueueTrack] Track added to queue only");
+  }
+}
+
+// 다음 곡 재생
+function playNextFromQueue() {
+  if (musicQueue.length > 0) {
+    const nextTrack = musicQueue.shift();
+    playSound(nextTrack.sound);
+    updateQueueUI();
+  }
+}
+
+// 곡이 끝나면 다음 대기열 곡 재생
+audio.addEventListener('ended', playNextFromQueue);
+
+function updateAlbumArt() {
+  if (!currentTrackSrc) return;
+
+  const fileName = currentTrackSrc.split('/').pop().trim();
+  const track = trackNames[fileName];
+
+  if (track && track.image) {
+    rotatingIcon.src = track.image;
+  } else {
+    rotatingIcon.src = 'assets/images/missing.png';
+  }
+}
+
+function updateSelectedThumbnail() {
+  // 선택된 배경 이미지 강조하기 (선택 사항)
+  document.querySelectorAll('.bg-thumb').forEach(img => {
+    if (img.dataset.bg === document.body.style.backgroundImage.replace(/url\("|"\)/g, '')) {
+      img.style.border = '2px solid white';
+    } else {
+      img.style.border = '2px solid #aaaaaa';
+    }
+  });
+}
+
+function updateQueueUI() {
+  queueList.innerHTML = '';
+  let draggedIndex = null;
+
+  // 🔶 드래그 위치를 표시할 선 생성 (공용)
+  const placeholder = document.createElement('div');
+  placeholder.className = 'queue-placeholder'; // CSS에서 스타일 정의 필요
+
+  musicQueue.forEach((track, index) => {
+    const iconWrapper = document.createElement('div');
+    iconWrapper.className = 'icon-item';
+    iconWrapper.draggable = true;
+
+    const img = document.createElement('img');
+    img.src = track.image;
+    img.onerror = () => img.src = 'assets/images/missing.png';
+
+    const textWrapper = document.createElement('div');
+    textWrapper.className = 'text-info';
+
+    const titleElem = document.createElement('div');
+    titleElem.className = 'song-title';
+    titleElem.textContent = track.title;
+
+    const artistElem = document.createElement('div');
+    artistElem.className = 'song-artist';
+    artistElem.textContent = track.artist;
+
+    textWrapper.appendChild(titleElem);
+    textWrapper.appendChild(artistElem);
+    iconWrapper.appendChild(img);
+    iconWrapper.appendChild(textWrapper);
+
+    // 🎧 클릭: 재생 + 제거
+    iconWrapper.addEventListener('click', () => {
+      playSound(track.sound);
+      musicQueue.splice(index, 1);
+      updateQueueUI();
+    });
+
+    // 🗑️ 우클릭: 제거만
+    iconWrapper.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      musicQueue.splice(index, 1);
+      updateQueueUI();
+    });
+
+    // 🧲 드래그 시작
+    iconWrapper.addEventListener('dragstart', (e) => {
+      draggedIndex = index;
+      iconWrapper.classList.add('dragging');
+      e.dataTransfer.effectAllowed = "move";
+      e.dataTransfer.setData("text/plain", ""); // 크롬 안정성 위한 빈값
+    });
+
+    // 🧲 드래그 끝
+    iconWrapper.addEventListener('dragend', () => {
+      iconWrapper.classList.remove('dragging');
+      if (placeholder.parentNode) {
+        placeholder.remove();
+      }
+    });
+
+    // 🧲 드래그 중 표시선 위치 판단
+    iconWrapper.addEventListener('dragover', (e) => {
+      e.preventDefault();
+      const bounds = iconWrapper.getBoundingClientRect();
+      const offset = e.clientY - bounds.top;
+      const insertBefore = offset < bounds.height / 2;
+
+      if (placeholder.parentNode) {
+        placeholder.remove();
+      }
+
+      if (insertBefore) {
+        iconWrapper.parentNode.insertBefore(placeholder, iconWrapper);
+      } else {
+        iconWrapper.parentNode.insertBefore(placeholder, iconWrapper.nextSibling);
+      }
+    });
+
+    // 🧲 드롭 처리
+    iconWrapper.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const newIndex = Array.from(queueList.children).indexOf(placeholder);
+      if (draggedIndex === null || newIndex === draggedIndex) return;
+
+      const [movedTrack] = musicQueue.splice(draggedIndex, 1);
+      musicQueue.splice(newIndex, 0, movedTrack);
+      draggedIndex = null;
+
+      placeholder.remove();
+      updateQueueUI();
+    });
+
+    queueList.appendChild(iconWrapper);
+  });
+
+  // 대기열 UI 표시 여부
+  if (musicQueue.length > 0) {
+    queueContainer.classList.add('show');
+  } else {
+    queueContainer.classList.remove('show');
+  }
+}
+
+const clearBtn = document.getElementById('clearQueueBtn');
+if (clearBtn) {
+  clearBtn.addEventListener('click', () => {
+    musicQueue.length = 0;
+    updateQueueUI();
   });
 }
