@@ -618,6 +618,17 @@ function playSound(src) {
   audio.currentTime = 0;
   audio.src = src;
 
+  audio.play()
+  .then(() => {
+    playPauseBtn.textContent = '⏸️';
+    rotatingIcon.classList.add('rotating');
+    rotatingIcon.classList.remove('paused');
+  })
+  .catch((err) => {
+    console.error('🎧 재생 오류:', err);
+    playPauseBtn.textContent = '▶️';
+  });
+
   // 회전 애니메이션 트리거
   rotatingWrapper.classList.remove('rolling-in');
   void rotatingWrapper.offsetWidth; // 강제 리플로우
@@ -957,19 +968,6 @@ document.addEventListener("DOMContentLoaded", () => {
     rotatingIcon.src = 'assets/images/missing.png';
     rotatingWrapper.style.display = 'block';
   });
-
-// Service Worker 등록 코드 예시
-navigator.serviceWorker.register('/sw.js').then(reg => {
-  reg.update(); // ✅ 수동으로 업데이트 요청
-});
-
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then(reg => console.log('SW registered', reg))
-      .catch(err => console.error('SW registration failed', err));
-  });
-}
 
 // 대기열에 추가
 function enqueueTrack(track) {
