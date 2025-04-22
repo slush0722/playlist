@@ -709,11 +709,11 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
 }
 
 #patchNoteSideBtn {
-  left: calc(50% - 320px); /* 왼쪽에 배치 */
+  left: calc(50% - 350px); /* 왼쪽에 배치 */
 }
 
 #recommendSideBtn {
-  left: calc(50% + 270px); /* 오른쪽에 배치 */
+  left: calc(50% + 300px); /* 오른쪽에 배치 */
 }
 
 /* 커스텀 툴팁 공통 스타일 */
@@ -780,14 +780,11 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   flex-shrink: 0;
 }
 
-/* 대기열 아이콘만 스크롤 */
+/* 대기열 아이콘 스크롤 영역 */
 .queue-list-wrapper {
   flex-grow: 1;
-
-  /* 스크롤 허용은 그대로 유지 */
-  overflow-y: visible !important; /* ✅ placeholder 표시를 위해 강제 */
+  overflow-y: auto;
   position: relative;
-
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
@@ -795,25 +792,30 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   display: none;
 }
 
-/* 대기열 아이콘 영역 */
+#queueList {
+  overflow-y: auto;
+  padding-right: 10px; /* 👈 placeholder가 오른쪽에 붙어있다면 여유 공간 추가 */
+  scrollbar-width: none;         /* Firefox */
+  -ms-overflow-style: none;      /* IE & Edge */
+}
+
+#queueList::-webkit-scrollbar {
+  display: none;                 /* Chrome, Safari, Opera */
+}
+
+/* 대기열 아이콘 리스트 */
 .queue-list {
   display: flex;
   flex-direction: column;
-
-  /* ✅ placeholder 선이 잘리지 않도록 수정 */
-  overflow-y: visible !important;
-
+  position: relative;
   max-height: calc((90px * 4) + 12px);
-  box-sizing: border-box;
   padding-right: 2px;
   width: 100%;
-
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-  position: relative;
+  box-sizing: border-box;
 }
+
 .queue-list::-webkit-scrollbar {
-  display: none;               /* Chrome, Safari */
+  display: none;             /* Chrome, Safari */
 }
 
 .queue-list .icon-item img {
@@ -835,13 +837,18 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
 }
 
 .queue-placeholder {
-  height: 6px;
-  background-color: #1db954;
-  border-radius: 3px;
-  margin: 4px 0;
-  z-index: 10;
-  position: relative;
-  animation: blink 1s infinite;
+  width: 100%;
+  box-sizing: border-box;
+  border: 2px solid #1db954;
+  height: 50px;
+  margin-bottom: 8px;
+  background-color: rgba(255, 255, 255, 0.05); /* 선택적 강조 */
+  border-radius: 8px; /* 👈 끝을 둥글게! */
+}
+
+.queue-item {
+  box-sizing: border-box;
+  margin: 8px 0; /* 있어도 괜찮지만 일관되게! */
 }
 
 .queue-title-bar {
@@ -896,6 +903,18 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   opacity: 1;
 }
 
+#skipBtn {
+  background: none;
+  border: none;
+  color: white;
+  font-size: 20px;
+  cursor: pointer;
+  transition: color 0.2s ease;
+}
+
+#skipBtn:hover {
+  color: #4fc3f7;
+}
 
 /* ✅ 모바일 기기 공통 - 배경 썸네일용 */
 @media only screen and (pointer: coarse) {
