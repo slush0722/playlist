@@ -216,13 +216,10 @@ loadBox(currentIndex); // 초기 박스 로드
 const prevBtn = document.getElementById('prevBtn');
 if (prevBtn) {
   prevBtn.addEventListener('click', () => {
-    if (audio.currentTime <= 1 && previousTrack) {
-      playSound(previousTrack);
-    } else {
-      audio.currentTime = 0;
-    }
+    // 🔄 현재 곡 처음부터 재시작
+    audio.currentTime = 0;
 
-    // ✅ 추가: data 인덱스를 순환하며 이전 박스 로드
+    // 📦 이전 인덱스의 박스 불러오기
     currentIndex = (currentIndex - 1 + data.length) % data.length;
     loadBox(currentIndex);
   });
@@ -317,6 +314,8 @@ audio.addEventListener('pause', () => {
   if (!audio.ended && audio.currentTime > 0) {
     pauseRotatingIcon(); // 일시정지일 때만 회전 멈추기
   }
+
+  stopLoopWatcher();
 });
 
 // 오디오 재생 시간 업데이트 함수
@@ -526,6 +525,10 @@ document.addEventListener('keydown', (e) => {
       }
 
       hidden = true;
+
+      // 👉 대기열 숨기기
+      queueContainer.classList.remove('show');
+
     } else {
       fadeIn(mainContainer);
       fadeIn(playlistColumn);
@@ -536,6 +539,11 @@ document.addEventListener('keydown', (e) => {
       }
 
       hidden = false;
+
+      // 👉 대기열 복원 (대기열이 존재할 때만)
+      if (musicQueue.length > 0) {
+        queueContainer.classList.add('show');
+      }
     }
   }
 });
@@ -588,12 +596,11 @@ function playSound(src) {
   const fileName = src.split('/').pop().trim();
   const trackInfo = trackNames[fileName] || { title: "없음", artist: "-" };
 
-  // 🔁 이전 트랙 저장
+  // ✅ 항상 이전 트랙 저장
   if (currentTrackSrc && currentTrackSrc !== src) {
     previousTrack = currentTrackSrc;
   }
 
-  // 현재 트랙 경로 저장
   currentTrackSrc = src;
 
   // 앨범아트 갱신
@@ -620,6 +627,9 @@ function playSound(src) {
   updateRotatingIcon(src);
   rotatingWrapper.style.display = 'block';
 
+  // ✅ 루프 감시 중단 (중복 방지)
+  stopLoopWatcher();
+
   // 재생 시작
   setTimeout(() => {
     audio.play().catch((err) => {
@@ -630,6 +640,9 @@ function playSound(src) {
     updateTimeBox(); // 시간 동기화
     rotatingIcon.classList.remove('paused');
     rotatingIcon.classList.add('rotating');
+
+    // ✅ 루프 감시 시작
+    startLoopWatcher();
   }, 500);
 }
 
@@ -736,9 +749,11 @@ const forwardBtn = document.getElementById('forwardBtn');
 
 // 10초 뒤로 이동
 rewindBtn.addEventListener('click', () => {
-  if (!isNaN(audio.duration)) {
+  if (audio.currentTime <= 1 && previousTrack && previousTrack !== currentTrackSrc) {
+    playSound(previousTrack);
+  } else if (!isNaN(audio.duration)) {
     audio.currentTime = Math.max(audio.currentTime - 10, 0);
-    updateTimeText();  // 🔥 이동 즉시 시간 업데이트
+    updateTimeText();
   }
 });
 
@@ -757,10 +772,19 @@ toggleViewBtn.addEventListener('click', () => {
     fadeOut(mainContainer);
     fadeOut(playlistColumn);
     hidden = true;
+
+    // 👉 대기열 숨기기
+    queueContainer.classList.remove('show');
+
   } else {
     fadeIn(mainContainer);
     fadeIn(playlistColumn);
     hidden = false;
+
+    // 👉 대기열 복원
+    if (musicQueue.length > 0) {
+      queueContainer.classList.add('show');
+    }
   }
 });
 
@@ -773,7 +797,7 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.5.0 Beta 1.0";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.5.0 Release";  // ✨ HTML의 버전과 정확히 일치시킬 것
 const visitorElement = document.getElementById('visitorCount');
 
 // 버전 변경 시 방문자 기록 초기화
@@ -956,6 +980,11 @@ function enqueueTrack(track) {
     return;
   }
 
+  // ✅ 이전 트랙 저장
+  if (currentTrackSrc) {
+    previousTrack = currentTrackSrc;
+  }
+
   const title = (track.title || "").trim();
   const artist = (track.artist || "").trim();
 
@@ -1027,8 +1056,8 @@ function updateQueueUI() {
   let draggedIndex = null;
 
   // 🔶 드래그 위치를 표시할 선 생성 (공용)
-  const placeholder = document.createElement('div');
-  placeholder.className = 'queue-placeholder'; // CSS에서 스타일 정의 필요
+  let placeholder = document.createElement('div'); // ✅ 전역 선언
+  placeholder.className = 'queue-placeholder';
 
   musicQueue.forEach((track, index) => {
     const iconWrapper = document.createElement('div');
@@ -1057,6 +1086,10 @@ function updateQueueUI() {
 
     // 🎧 클릭: 재생 + 제거
     iconWrapper.addEventListener('click', () => {
+      if (currentTrackSrc) {
+        previousTrack = currentTrackSrc; // ✅ 꼭 수동으로 기록
+      }
+    
       playSound(track.sound);
       musicQueue.splice(index, 1);
       updateQueueUI();
@@ -1091,16 +1124,21 @@ function updateQueueUI() {
       const bounds = iconWrapper.getBoundingClientRect();
       const offset = e.clientY - bounds.top;
       const insertBefore = offset < bounds.height / 2;
-
+    
       if (placeholder.parentNode) {
         placeholder.remove();
       }
-
+    
       if (insertBefore) {
         iconWrapper.parentNode.insertBefore(placeholder, iconWrapper);
       } else {
         iconWrapper.parentNode.insertBefore(placeholder, iconWrapper.nextSibling);
       }
+    
+      // ✅ 반드시 스크롤에 포함시키기
+      placeholder.scrollIntoView({ block: 'nearest', behavior: 'auto' });
+
+      console.log("📍 placeholder 위치", placeholder, placeholder.parentNode);
     });
 
     // 🧲 드롭 처리
@@ -1135,3 +1173,94 @@ if (clearBtn) {
     updateQueueUI();
   });
 }
+
+function playSoundSilent(src) {
+  previousTrack = currentTrackSrc;
+  currentTrackSrc = src;
+
+  audio.pause();
+  audio.currentTime = 0;
+  audio.src = src;
+
+  updateAlbumArt();           // ✅ 회전 이미지 유지
+  updateRotatingIcon(src);    // ✅ 디스크 이미지 유지
+
+  setTimeout(() => {
+    audio.play().catch(err => console.error("재생 오류:", err));
+    updateTimeBox();
+    rotatingIcon.classList.remove('paused');
+    rotatingIcon.classList.add('rotating');
+  }, 500);
+}
+
+const skipBtn = document.getElementById('skipBtn');
+
+skipBtn.addEventListener('click', () => {
+  if (musicQueue.length > 0) {
+    const nextTrack = musicQueue.shift();
+    playSound(nextTrack.sound);
+    updateQueueUI();
+  } else {
+    // 🎲 대기열이 없을 때 → 셔플 버튼 동작 실행
+    shuffleBtn?.click();
+  }
+});
+
+let loopWatcherInterval = null;
+
+function startLoopWatcher() {
+  if (loopWatcherInterval) return; // 중복 방지
+
+  loopWatcherInterval = setInterval(() => {
+    const isLooping = loopBtn.classList.contains('active');
+    const hasTrack = !isNaN(audio.duration);
+
+    if (isLooping && hasTrack) {
+      const nearEnd = audio.currentTime >= audio.duration - 1;
+
+      if (nearEnd) {
+        audio.currentTime = 0; // 🔁 처음으로 되돌림
+        audio.play();
+      }
+    }
+  }, 200); // 0.2초마다 체크
+}
+
+function stopLoopWatcher() {
+  clearInterval(loopWatcherInterval);
+  loopWatcherInterval = null;
+}
+
+let draggedItem = null;
+
+queueList.addEventListener('dragover', (e) => {
+  e.preventDefault();
+
+  const mouseY = e.clientY;
+  const children = [...queueList.querySelectorAll('.queue-item')].filter(child => child !== draggedItem && child !== placeholder);
+
+  let inserted = false;
+  for (const child of children) {
+    const rect = child.getBoundingClientRect();
+    const midpoint = rect.top + rect.height / 2;
+
+    // 🛠️ drag한 아이템이 위에서 아래로 내려갈 때만 보정
+    const draggedRect = draggedItem.getBoundingClientRect();
+    const isMovingDown = draggedRect.top < mouseY;
+
+    // ⚠️ 아래로 이동 시, 현재 child가 draggedItem 다음이면 skip
+    if (isMovingDown && child === draggedItem.nextElementSibling) {
+      continue;
+    }
+
+    if (mouseY < midpoint) {
+      queueList.insertBefore(placeholder, child);
+      inserted = true;
+      break;
+    }
+  }
+
+  if (!inserted) {
+    queueList.appendChild(placeholder);
+  }
+});
