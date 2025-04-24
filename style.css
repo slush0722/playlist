@@ -367,39 +367,37 @@ html, body {
 }
 
 #rotatingWrapper {
-  position: fixed;
-  top: 45%;
+  width: 120px;
+  height: 120px;
+  position: absolute;
+  top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  transform-origin: center center;
-  width: 200px;
-  height: 200px;
-  opacity: 0;
-  pointer-events: auto;
-  z-index: 9999;
-  transition: transform 0.3s ease, opacity 0.3s ease;
-  will-change: transform;
+  transform: translate(-50%, -50%); /* ✅ 완전한 중앙 정렬 */
+  z-index: 10;
+  display: none; /* ✅ 처음에는 숨겨둔다 */
 }
 
 #rotatingIcon {
-width: 100%;
-height: 100%;
-border-radius: 50%;
-box-shadow: 0 0 20px rgba(0, 0, 0, 0.4), inset 0 0 10px rgba(255, 255, 255, 0.2);
-border: 10px solid #111;
-background-color: #222;
-object-fit: cover;
+  width: 100%;
+  height: 100%;
+  border-radius: 50%;
+  object-fit: cover;
+  position: absolute;        /* ✅ 위치 제어를 위해 absolute로 */
+  top: -120px;
+  left: -120px;
+  z-index: -1;
 
-transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
+  background-color: #333333;
+  border: 60px solid #222222;
+  box-shadow: none;
 }
 
 #rotatingIcon:hover {
   transform: scale(1.1); /* ✅ 확대 효과 */
 }
 
-.rotating {
+#rotatingIcon.rotating {
   animation: spin 5s linear infinite;
-  animation-play-state: running;
 }
 
 .paused {
@@ -407,12 +405,8 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
 }
 
 @keyframes spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+  0%   { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 /* 재생 중 바 기본 상태 */
@@ -439,19 +433,17 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   transform: translateX(-50%) translateY(0);
 }
 
-@keyframes rollIn {
+@keyframes slideRightFromCurrent {
   0% {
-    transform: translateX(-150%) translateY(-50%) rotate(-180deg);
-    opacity: 0;
+    transform: translateX(0);      /* 원래 위치에서 */
   }
   100% {
-    transform: translateX(-50%) translateY(-50%) rotate(0deg);
-    opacity: 1;
+    transform: translateX(100px);   /* → 오른쪽으로 24px 이동 */
   }
 }
 
 #rotatingWrapper.rolling-in {
-  animation: rollIn 1.2s ease-out forwards;
+  animation: slideRightFromCurrent 1s ease-out forwards;
 }
 
 .audio-controls button {
@@ -643,17 +635,6 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
 
 .bg-thumb:hover {
   transform: scale(1.1);
-}
-
-@keyframes slideInRight {
-  0% {
-    transform: translateX(-20px);
-    opacity: 0;
-  }
-  100% {
-    transform: translateX(0px);
-    opacity: 1;
-  }
 }
 
 /* 썸네일이 보일 때 순차적 delay */
@@ -916,6 +897,31 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   color: #4fc3f7;
 }
 
+#albumCoverWrapper {
+  position: fixed;
+  top: 46%;
+  left: 46%;
+  transform: translate(-50%, -50%);
+  width: 260px;
+  height: 260px;
+  background-color: #1f1f1f;
+  border-radius: 16px;
+  box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+#albumCoverImage {
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+  object-fit: cover;
+  position: relative;
+  z-index: 9999; /* 최상단 */
+}
+
 /* ✅ 모바일 기기 공통 - 배경 썸네일용 */
 @media only screen and (pointer: coarse) {
 .desktop-only {
@@ -1010,12 +1016,6 @@ transition: transform 0.3s ease; /* ✅ 여기에 transition 추가 */
   display: block;
   margin-left: auto;
   margin-right: auto;
-}
-
-#rotatingWrapper {
-  width: 90px;
-  height: 90px;
-  top: 37%;
 }
 
 .volume-control {
