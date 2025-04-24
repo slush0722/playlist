@@ -1,4 +1,5 @@
 let currentTrackSrc = null;
+let rollingTimeout = null;
 
 // 🔝 꼭 맨 위에 있어야 함
 const musicQueue = [];
@@ -216,8 +217,6 @@ loadBox(currentIndex); // 초기 박스 로드
 const prevBtn = document.getElementById('prevBtn');
 if (prevBtn) {
   prevBtn.addEventListener('click', () => {
-    // 🔄 현재 곡 처음부터 재시작
-    audio.currentTime = 0;
 
     // 📦 이전 인덱스의 박스 불러오기
     currentIndex = (currentIndex - 1 + data.length) % data.length;
@@ -240,8 +239,21 @@ stopBtn.addEventListener('click', () => {
 
   // 회전 이미지 초기화
   rotatingIcon.src = 'assets/images/missing.png';
+  // 회전 아이콘 리셋
   rotatingIcon.classList.remove('rotating', 'paused');
   rotatingWrapper.classList.remove('rolling-in');
+
+  // ✅ transform 상태 초기화 (원래 위치로 복귀)
+  rotatingWrapper.style.transform = 'translateX(0)';
+
+  // ✅ 강제 리플로우
+  void rotatingWrapper.offsetWidth;
+
+  // ✅ 이동 애니메이션 다시 실행 + 회전
+  rotatingWrapper.classList.add('rolling-in');
+  rotatingIcon.classList.add('rotating');
+
+  // ✅ 화면에 표시
   rotatingWrapper.style.display = 'block';
 
   // 트랙 정보 초기화
@@ -548,17 +560,6 @@ document.addEventListener('keydown', (e) => {
   }
 });
 
-// 초기 진입 시 표시
-window.addEventListener('DOMContentLoaded', () => {
-  mainContainer.classList.add('fade-in');
-  playlistColumn.classList.add('fade-in');
-
-  rotatingWrapper.style.display = 'block';
-  rotatingWrapper.style.opacity = '1'; // ✅ 이 줄 추가
-  rotatingIcon.src = 'assets/images/missing.png';
-  rotatingIcon.classList.remove('rotating', 'paused');
-});
-
 const rotatingWrapper = document.getElementById('rotatingWrapper');
 const rotatingIcon = document.getElementById('rotatingIcon');
 
@@ -596,65 +597,69 @@ function playSound(src) {
   const fileName = src.split('/').pop().trim();
   const trackInfo = trackNames[fileName] || { title: "없음", artist: "-" };
 
-  // ✅ 항상 이전 트랙 저장
+  console.log("🎧 [playSound] 시작", src);
+  console.log("🎯 현재 classList:", rotatingWrapper.classList);
+  console.log("🎯 초기 transform 상태:", getComputedStyle(rotatingWrapper).transform);
+
+  // 트랙 변경 로직
   if (currentTrackSrc && currentTrackSrc !== src) {
     previousTrack = currentTrackSrc;
   }
-
   currentTrackSrc = src;
 
-  // 앨범아트 갱신
-  updateAlbumArt();
+  resetRotatingIcon();              // 아이콘 초기화 (회전 멈춤 등)
+  updateRotatingIcon(src);         // 앨범 이미지 갱신
+  rotatingWrapper.style.display = 'block';
 
-  // 트랙 정보 바 업데이트
-  if (trackInfo && trackInfo.title && trackInfo.artist) {
-    trackInfoBar.textContent = `${trackInfo.title} - ${trackInfo.artist}`;
-  } else {
-    trackInfoBar.textContent = "없음";
-  }
+  updateAlbumArt();                // 앨범 커버 이미지 갱신
+  trackInfoBar.textContent = `${trackInfo.title} - ${trackInfo.artist}`;
 
-  // 오디오 초기화 및 재생 준비
+  // ✅ 회전 앨범 이미지 보이게 만들기
+  rotatingWrapper.style.display = 'block';
+  rotatingWrapper.style.opacity = '1';
+
+  // 오디오 초기화
   audio.pause();
   audio.currentTime = 0;
   audio.src = src;
 
-  audio.play()
-  .then(() => {
+  // 🔁 애니메이션과 회전 동기화
+  console.log("🔁 [rolling-in] 애니메이션 시작");
+
+  // ✅ 애니메이션 초기화 및 중복 방지
+  rotatingWrapper.classList.remove('rolling-in');
+  rotatingWrapper.style.animation = 'none';       // 강제 중단
+  void rotatingWrapper.offsetWidth;               // 리플로우
+  rotatingWrapper.style.animation = '';           // 재활성화
+
+  rotatingWrapper.classList.add('rolling-in');
+  rotatingIcon.classList.remove('paused');
+  rotatingIcon.classList.add('rotating');
+
+  // ✅ 이전 애니메이션 고정 예약 제거
+  if (rollingTimeout) {
+    clearTimeout(rollingTimeout);
+    rollingTimeout = null;
+  }
+
+  // 🎯 애니메이션 후 위치 고정 예약
+  rollingTimeout = setTimeout(() => {
+    rotatingWrapper.classList.remove('rolling-in');
+    rotatingWrapper.style.transform = 'translateX(100px)';
+  }, 1000); // ← 애니메이션 지속 시간과 일치
+
+  // 🎵 오디오 재생
+  audio.play().then(() => {
+    console.log("✅ [play] 재생 성공:", src);
     playPauseBtn.textContent = '⏸️';
-    rotatingIcon.classList.add('rotating');
-    rotatingIcon.classList.remove('paused');
-  })
-  .catch((err) => {
-    console.error('🎧 재생 오류:', err);
+
+    updateTimeBox();
+    startLoopWatcher();
+  }).catch((err) => {
+    console.error("❌ [play] 재생 오류:", err);
+    trackInfoBar.textContent = "재생 오류 발생";
     playPauseBtn.textContent = '▶️';
   });
-
-  // 회전 애니메이션 트리거
-  rotatingWrapper.classList.remove('rolling-in');
-  void rotatingWrapper.offsetWidth; // 강제 리플로우
-  rotatingWrapper.classList.add('rolling-in');
-
-  // 회전 아이콘 업데이트
-  updateRotatingIcon(src);
-  rotatingWrapper.style.display = 'block';
-
-  // ✅ 루프 감시 중단 (중복 방지)
-  stopLoopWatcher();
-
-  // 재생 시작
-  setTimeout(() => {
-    audio.play().catch((err) => {
-      console.error("재생 오류:", err);
-      trackInfoBar.textContent = "재생 오류 발생";
-    });
-
-    updateTimeBox(); // 시간 동기화
-    rotatingIcon.classList.remove('paused');
-    rotatingIcon.classList.add('rotating');
-
-    // ✅ 루프 감시 시작
-    startLoopWatcher();
-  }, 500);
 }
 
 rotatingIcon.onerror = function () {
@@ -724,13 +729,14 @@ function getValidSoundsInCurrentBox() {
 }
 
 // 회전 이미지 클릭 시 재생중 바 토글
-rotatingWrapper.addEventListener('click', () => {
+rotatingWrapper.addEventListener('click', (e) => {
+  e.stopPropagation(); // 다른 클릭 이벤트로 전파 막음
   trackInfoBar.classList.toggle('active');
 });
 
-// 재생중 바 클릭 시 사라지게
-trackInfoBar.addEventListener('click', () => {
-  trackInfoBar.classList.remove('active');
+// 앨범 커버 클릭 시에도 재생 정보 토글 (겹쳐지더라도 둘 다 가능)
+albumCoverWrapper.addEventListener('click', (e) => {
+  trackInfoBar.classList.toggle('active');
 });
 
 rotatingWrapper.style.display = 'block';
@@ -808,7 +814,7 @@ toggleInfoBtn.addEventListener('click', () => {
   backgroundThumbnails.classList.toggle('active');
 });
 
-const CURRENT_VERSION = "1.5.0 Release";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.5.1";  // ✨ HTML의 버전과 정확히 일치시킬 것
 const visitorElement = document.getElementById('visitorCount');
 
 // 버전 변경 시 방문자 기록 초기화
@@ -1261,4 +1267,88 @@ queueList.addEventListener('dragover', (e) => {
   if (!inserted) {
     queueList.appendChild(placeholder);
   }
+});
+
+function updateAlbumArt() {
+  const fileName = currentTrackSrc.split('/').pop().replace('.mp3', '');
+  const imagePath = `assets/images/${fileName}.png`;
+
+  const cover = document.getElementById('albumCoverImage');
+  cover.src = imagePath;
+}
+
+function showRotatingAndPlay() {
+  const wrapper = document.getElementById('rotatingWrapper');
+
+  // 시작 상태 준비
+  wrapper.classList.remove('rotating', 'rolling-in');
+  wrapper.style.opacity = 0;
+
+  // 굴러 들어오는 애니메이션 부여
+  setTimeout(() => {
+    wrapper.classList.add('rolling-in');
+  }, 50);
+
+  // 굴러 들어온 뒤 회전 시작
+  setTimeout(() => {
+    wrapper.classList.remove('rolling-in');
+    wrapper.classList.add('rotating');
+    audio.play(); // 음악 재생
+  }, 1000); // rollInHalf 애니메이션 시간만큼 기다림
+}
+
+function resetRotatingIcon() {
+  console.log("♻️ [resetRotatingIcon] 초기화 중");
+
+  rotatingWrapper.classList.remove('rolling-in', 'rotating');
+  rotatingIcon.classList.remove('rotating', 'paused');
+
+  // 💡 단, transform이나 display 조작은 절대 X
+
+  // 🎯 transform이나 display는 애니메이션에 맡겨야 정상 동작함
+}
+
+function animateRotatingIconIn() {
+  const wrapper = document.getElementById('rotatingWrapper');
+  wrapper.classList.add('rolling-in');
+
+  setTimeout(() => {
+    wrapper.classList.remove('rolling-in');
+    wrapper.classList.add('rotating');
+  }, 1200); // 애니메이션 길이
+}
+
+const rw = document.getElementById('rotatingWrapper');
+console.log("🎯 classList:", rw.classList);
+console.log("🎯 inline style.transform:", rw.style.transform);
+console.log("🎯 computed transform:", getComputedStyle(rw).transform);
+const anim = getComputedStyle(rotatingWrapper).animationName;
+console.log("🌀 현재 animationName:", anim);
+const el = document.getElementById('rotatingWrapper');
+console.log('DOM 위치:', el.getBoundingClientRect());
+console.log('보이는가?', getComputedStyle(el).display, getComputedStyle(el).visibility);
+console.log('Transform:', getComputedStyle(el).transform);
+
+window.addEventListener('DOMContentLoaded', () => {
+  const rotatingWrapper = document.getElementById('rotatingWrapper');
+  const rotatingIcon = document.getElementById('rotatingIcon');
+  const mainContainer = document.getElementById('mainContainer');
+  const playlistColumn = document.getElementById('playlistColumn');
+
+  // ✅ 초기 위치 설정
+  rotatingWrapper.style.transform = 'translate(-50%, -50%)';
+  rotatingWrapper.style.top = '50%';
+  rotatingWrapper.style.left = '50%';
+
+  // ✅ 처음에는 안 보이게
+  rotatingWrapper.style.display = 'none';
+  rotatingWrapper.style.opacity = '0';
+
+  // ✅ 초기 커버 디스크 이미지 세팅
+  rotatingIcon.src = 'assets/images/missing.png';
+  rotatingIcon.classList.remove('rotating', 'paused');
+
+  // ✅ UI 페이드인 효과
+  mainContainer.classList.add('fade-in');
+  playlistColumn.classList.add('fade-in');
 });
