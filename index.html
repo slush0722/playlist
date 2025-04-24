@@ -122,15 +122,18 @@
   </div>
 
   <!-- 이미지 회전용 구조 -->
-  <div id="rotatingWrapper">
-    <img id="rotatingIcon" src="assets/images/missing.png" alt="Album Art" />
+  <div id="albumCoverWrapper">
+    <div id="rotatingWrapper">
+      <img id="rotatingIcon" src="assets/images/missing.png" alt="Rotating Album">
+    </div>
+    <img id="albumCoverImage" src="assets/images/missing.png" alt="Album Art">
   </div>
-
+  
   <!-- 좌측 하단에 화살표 버튼 + 정보 박스 -->
   <div id="bottomLeftContainer" style="position: fixed; bottom: 30px; left: 40px; z-index: 9999;">
     <button id="toggleInfoBtn">⬆️</button>
     <div id="siteInfo">
-      Version: 1.5.0 Release<br>
+      Version: 1.5.1<br>
       Visitors: <span id="visitorCount">0</span>
       Developer: Pascal345<br>
     </div>
