@@ -237,9 +237,14 @@ stopBtn.addEventListener('click', () => {
   audio.currentTime = 0;
   currentTrackSrc = null;
 
+  // ✅ 커버 이미지도 초기화
+  const albumCoverImage = document.getElementById('albumCoverImage');
+  if (albumCoverImage) {
+    albumCoverImage.src = 'assets/images/missing.png';
+  }
+
   // 회전 이미지 초기화
   rotatingIcon.src = 'assets/images/missing.png';
-  // 회전 아이콘 리셋
   rotatingIcon.classList.remove('rotating', 'paused');
   rotatingWrapper.classList.remove('rolling-in');
 
@@ -259,13 +264,12 @@ stopBtn.addEventListener('click', () => {
   // 트랙 정보 초기화
   trackInfoBar.textContent = '없음';
 
-  // 재생/정지 아이콘도 초기화
+  // 재생/정지 아이콘 초기화
   playPauseBtn.textContent = '▶️';
 
   // 시간 바 초기화
   timeBox.textContent = '0:00 / 0:00';
 });
-
 
 // 재생 버튼 동작
 playPauseBtn.addEventListener('click', () => {
@@ -810,11 +814,13 @@ const siteInfo = document.getElementById('siteInfo');
 const backgroundThumbnails = document.getElementById('backgroundThumbnails');
 
 toggleInfoBtn.addEventListener('click', () => {
-  siteInfo.classList.toggle('active');
-  backgroundThumbnails.classList.toggle('active');
+  requestAnimationFrame(() => {
+    siteInfo.classList.toggle('active');
+    backgroundThumbnails.classList.toggle('active');
+  });
 });
 
-const CURRENT_VERSION = "1.5.1";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.5.2";  // ✨ HTML의 버전과 정확히 일치시킬 것
 const visitorElement = document.getElementById('visitorCount');
 
 // 버전 변경 시 방문자 기록 초기화
@@ -1351,4 +1357,52 @@ window.addEventListener('DOMContentLoaded', () => {
   // ✅ UI 페이드인 효과
   mainContainer.classList.add('fade-in');
   playlistColumn.classList.add('fade-in');
+});
+
+// ✅ 스페이스바, A키, D키, S키, G키로 조작
+window.addEventListener('keydown', (event) => {
+  if (event.code === 'Space') {
+    event.preventDefault();
+    playPauseBtn.click(); // 재생/일시정지
+  }
+  if (event.key === 'a' || event.key === 'A') {
+    event.preventDefault();
+    rewindBtn.click();    // 이전곡
+  }
+  if (event.key === 'd' || event.key === 'D') {
+    event.preventDefault();
+    forwardBtn.click();   // 다음곡
+  }
+  if (event.key === 'g' || event.key === 'G') {
+    event.preventDefault();
+    skipBtn.click();      // 스킵 버튼
+  }
+  if (event.key === 's' || event.key === 'S') {
+    event.preventDefault();
+    stopBtn.click();      // 정지 버튼
+  }
+  if (event.key === 'i' || event.key === 'I') {
+    event.preventDefault();
+    toggleInfoBtn.click(); // 정보 토글
+  }
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  // ✅ localStorage에 저장된 방문자 수 가져오기
+  let visitorCount = localStorage.getItem('visitorCount');
+
+  if (!visitorCount) {
+    visitorCount = 1;
+  } else {
+    visitorCount = parseInt(visitorCount, 10) + 1;
+  }
+
+  // ✅ 다시 저장
+  localStorage.setItem('visitorCount', visitorCount);
+
+  // ✅ 화면에 표시
+  const visitorElement = document.getElementById('visitorCount');
+  if (visitorElement) {
+    visitorElement.textContent = visitorCount;
+  }
 });
