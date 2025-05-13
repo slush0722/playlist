@@ -20,6 +20,15 @@
   <meta property="og:image" content="https://cdn.discordapp.com/attachments/1164303125205749846/1363437053051932768/start-background.png?ex=68060734&is=6804b5b4&hm=229355e991aad8e519746bb5b8410bd8e3c3dcab44b4a3b4dd04798439c0ac1e&" />
   <meta property="og:url" content="https://pascalplaylist.netlify.app/" />
   <meta property="og:type" content="website" />
+
+  <!-- 모바일 공통 스타일 -->
+  <link rel="stylesheet" href="css/mobile-common.css" media="only screen and (pointer: coarse)">
+
+  <!-- 모바일 가로 스타일 -->
+  <link rel="stylesheet" href="css/mobile-landscape.css" media="only screen and (max-width: 1024px) and (orientation: landscape)">
+
+  <!-- 모바일 세로 스타일 -->
+  <link rel="stylesheet" href="css/mobile-portrait.css" media="only screen and (pointer: coarse) and (orientation: portrait)">
 </head>
 <body>
 
@@ -133,7 +142,7 @@
   <div id="bottomLeftContainer" style="position: fixed; bottom: 30px; left: 40px; z-index: 9999;">
     <button id="toggleInfoBtn">⬆️</button>
     <div id="siteInfo">
-      Version: 1.5.2<br>
+      Version: 1.5.3<br>
       Visitors: <span id="visitorCount">0</span>
       Developer: Pascal345<br>
     </div>
