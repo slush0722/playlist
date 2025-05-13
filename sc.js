@@ -820,7 +820,7 @@ toggleInfoBtn.addEventListener('click', () => {
   });
 });
 
-const CURRENT_VERSION = "1.5.2";  // ✨ HTML의 버전과 정확히 일치시킬 것
+const CURRENT_VERSION = "1.5.3";  // ✨ HTML의 버전과 정확히 일치시킬 것
 const visitorElement = document.getElementById('visitorCount');
 
 // 버전 변경 시 방문자 기록 초기화
