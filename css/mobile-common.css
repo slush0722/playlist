@@ -1,0 +1,11 @@
+/* 모바일 가로세로 공용버전 */
+
+@media only screen and (pointer: coarse) {
+    .desktop-only {
+      display: inline-block;
+    }
+  
+    .mobile-only {
+      display: none;
+    }
+  }  

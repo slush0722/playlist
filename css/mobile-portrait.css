@@ -1,0 +1,43 @@
+/* 모바일 세로버전 */
+
+@media only screen and (pointer: coarse) and (orientation: portrait) {
+    .desktop-only {
+      display: none;
+    }
+    .mobile-only {
+      display: inline-block;
+    }
+    
+    #patchNoteSideBtn,
+    #recommendSideBtn {
+      top: calc(70%); /* 너무 위로 가있던 거 내려줌 */
+      padding: 22px;
+      font-size: 20px;
+    }
+    
+    #trackInfoBar {
+      font-size: 18px;
+      padding: 20px 34px;
+    }
+    
+    .volume-control {
+      font-size: 13px;
+      transform: translateX(-50%) scale(0.85);
+    }
+    
+    .audio-controls {
+      font-size: 14px;
+      gap: 10px;
+      transform: translateX(-50%) scale(0.9);
+    }
+    
+    .time-box {
+      font-size: 14px;
+      bottom: 60px;
+    }
+    
+    #clock-box {
+      font-size: 14px;
+      bottom: 20px;
+    }
+}
