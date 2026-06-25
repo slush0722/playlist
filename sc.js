@@ -791,6 +791,14 @@ function playSound(src) {
   }
   currentTrackSrc = src;
 
+  // Spotify embed 정지 및 spotify-mode 해제
+  const spotifyEmbedEl = document.getElementById('spotifyEmbed');
+  if (spotifyEmbedEl && spotifyEmbedEl.src) {
+    spotifyEmbedEl.src = '';
+    spotifyEmbedEl.style.display = 'none';
+  }
+  rotatingWrapper.classList.remove('spotify-mode');
+
   resetRotatingIcon();              // 아이콘 초기화 (회전 멈춤 등)
   updateRotatingIcon(src);         // 앨범 이미지 갱신
   rotatingWrapper.style.display = 'block';
@@ -2028,8 +2036,13 @@ if (isHidden) {
 
   // ── Spotify API 헬퍼 ─────────────────────────────────────────
   async function spotifyApi(path, params = {}) {
-    const url = new URL('https://api.spotify.com/v1' + path);
-    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+    // type 파라미터의 쉼표가 URLSearchParams에 의해 인코딩되면 400 에러 발생
+    // → URL을 직접 문자열로 조립
+    let url = 'https://api.spotify.com/v1' + path;
+    const entries = Object.entries(params);
+    if (entries.length) {
+      url += '?' + entries.map(([k,v]) => encodeURIComponent(k) + '=' + (k === 'type' ? v : encodeURIComponent(v))).join('&');
+    }
     const res = await fetch(url, {
       headers: { Authorization: 'Bearer ' + accessToken }
     });
@@ -2037,7 +2050,6 @@ if (isHidden) {
       const errBody = await res.json().catch(() => ({}));
       console.error('Spotify API error', res.status, path, errBody);
       if (res.status === 401) {
-        // 토큰 만료 → 로그아웃 후 재로그인 안내
         onLoggedOut();
         openPanel();
         const prompt = document.getElementById('spotifyLoginPrompt');
@@ -2065,58 +2077,62 @@ if (isHidden) {
   function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
 
   // ── embed 로드 ────────────────────────────────────────────────
-  // albumCoverImage(네모) = 플레이리스트/앨범 커버
-  // rotatingIcon(레코드판) = 현재 재생 중인 트랙 커버
   function loadEmbed(uri) {
     const parts = uri.split(':');
     if (parts.length < 3) return;
     const type = parts[1];
     const id   = parts[2];
-    const url  = `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
-    spotifyEmbed.src = url;
+
+    // ① 기존 일반 오디오 정지
+    if (typeof audio !== 'undefined' && audio && !audio.paused) {
+      audio.pause();
+      audio.currentTime = 0;
+    }
+
+    const embedUrl = `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
+    spotifyEmbed.src = embedUrl;
     spotifyEmbed.style.display = 'block';
     const volNote = document.querySelector('.spotify-volume-note');
     if (volNote) volNote.style.display = 'block';
 
+    // ② 레코드판 즉시 표시 + spotify-mode 초록 광원
+    const rWrapper = document.getElementById('rotatingWrapper');
+    const rIcon    = document.getElementById('rotatingIcon');
+    if (rWrapper) {
+      rWrapper.style.display = 'block';
+      rWrapper.style.opacity = '1';
+      rWrapper.classList.add('spotify-mode');
+    }
+    if (rIcon) {
+      rIcon.classList.remove('paused');
+      rIcon.classList.add('rotating');
+    }
+
     if (!accessToken) return;
 
     if (type === 'track') {
-      // 단일 트랙: 네모 + 레코드판 모두 트랙 커버
       spotifyApi('/tracks/' + id).then(t => {
         const img = t?.album?.images?.[0]?.url;
-        if (img) {
-          setAlbumCover(img);       // 네모
-          setRotatingIcon(img);     // 레코드판
-          setTrackBar(t.name, t.artists?.[0]?.name);
-        }
+        setAlbumCover(img);
+        setRotatingIcon(img);
+        setTrackBar(t.name, t.artists?.[0]?.name);
       }).catch(()=>{});
 
     } else if (type === 'playlist') {
-      // 플레이리스트: 네모 = 플리 커버, 레코드판 = 첫 번째 트랙 커버
-      spotifyApi('/playlists/' + id + '?fields=name,images,tracks.items(track(name,artists,album(images)))').then(p => {
-        const coverImg = p?.images?.[0]?.url;
-        if (coverImg) setAlbumCover(coverImg);   // 네모 = 플리 커버
-
-        // 레코드판 = 첫 트랙 커버
-        const firstTrack = p?.tracks?.items?.[0]?.track;
-        const trackImg = firstTrack?.album?.images?.[0]?.url;
-        if (trackImg) setRotatingIcon(trackImg);
-        else if (coverImg) setRotatingIcon(coverImg); // 트랙 없으면 플리 커버라도
-
+      // 네모 = 플리 커버, 레코드판도 플리 커버 (iframe 외부에서 현재 트랙 접근 불가)
+      spotifyApi('/playlists/' + id + '?fields=name,images').then(p => {
+        const img = p?.images?.[0]?.url;
+        setAlbumCover(img);
+        setRotatingIcon(img);
         setTrackBar(p.name, 'Spotify 플레이리스트');
-        startRotating();
       }).catch(()=>{});
 
     } else if (type === 'album') {
-      // 앨범: 네모 + 레코드판 모두 앨범 커버
       spotifyApi('/albums/' + id).then(a => {
         const img = a?.images?.[0]?.url;
-        if (img) {
-          setAlbumCover(img);
-          setRotatingIcon(img);
-        }
+        setAlbumCover(img);
+        setRotatingIcon(img);
         setTrackBar(a.name, a.artists?.[0]?.name);
-        startRotating();
       }).catch(()=>{});
     }
   }
