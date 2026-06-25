@@ -1918,7 +1918,7 @@ if (isHidden) {
 
   // ── 로그인 (PKCE) ─────────────────────────────────────────────
   async function startLogin() {
-    if (SPOTIFY_CLIENT_ID === '440affc728314810a90812eb4abb1651') {
+    if (SPOTIFY_CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
       alert('⚠️ sc.js 상단의 SPOTIFY_CLIENT_ID를 Spotify Developer Dashboard에서 발급받은 값으로 교체하세요!\n\nhttps://developer.spotify.com/dashboard');
       return;
     }
