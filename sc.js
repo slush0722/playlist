@@ -709,6 +709,7 @@ const fadeOut = (element) => {
 
 // f 키를 눌렀을 때 토글
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
   if (e.key.toLowerCase() === 'f') {
     if (!hidden) {
       // 👉 clockBox가 켜져 있었는지 기억해둠
@@ -1135,6 +1136,7 @@ function changeBackgroundSmoothly(imagePath, index = null) {
 
 // 화살표 키로 배경 전환
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
   if (e.key === 'ArrowRight') {
     currentBackgroundIndex = (currentBackgroundIndex + 1) % backgroundPaths.length;
     changeBackgroundSmoothly(backgroundPaths[currentBackgroundIndex], currentBackgroundIndex);
@@ -1535,6 +1537,7 @@ window.addEventListener('DOMContentLoaded', () => {
 
 // ✅ 스페이스바, A키, D키, S키, G키로 조작
 window.addEventListener('keydown', (event) => {
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
   if (event.code === 'Space') {
     event.preventDefault();
     playPauseBtn.click(); // 재생/일시정지
@@ -1578,29 +1581,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const visitorElement = document.getElementById('visitorCount');
   if (visitorElement) {
     visitorElement.textContent = visitorCount;
-  }
-});
-
-// ✅ 토글 키 이벤트
-let eqVisible = false;
-
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'm') {
-    eqVisible = !eqVisible;
-    const eq = document.getElementById('equalizerContainer');
-    const booster = document.getElementById('boosterContainer');
-
-    if (eqVisible) {
-      eq.style.display = 'block';
-
-      // 베이스 부스터는 약간의 딜레이 후 표시
-      setTimeout(() => {
-        booster.style.display = 'block';
-      }, 300); // 애니메이션 시간 고려
-    } else {
-      eq.style.display = 'none';
-      booster.style.display = 'none';
-    }
   }
 });
 
@@ -1836,6 +1816,7 @@ function hidePanels() {
 }
 
 document.addEventListener('keydown', (e) => {
+  if (document.activeElement.tagName === 'INPUT' || document.activeElement.tagName === 'TEXTAREA') return;
   if (e.key.toLowerCase() === 'm') {
     if (isPanelVisible) {
       hidePanels();
@@ -1937,8 +1918,8 @@ if (isHidden) {
 
   // ── 로그인 (PKCE) ─────────────────────────────────────────────
   async function startLogin() {
-    if (!SPOTIFY_CLIENT_ID || SPOTIFY_CLIENT_ID === 'YOUR_CLIENT_ID_HERE') {
-      alert('⚠️ sc.js의 SPOTIFY_CLIENT_ID를 입력해주세요.');
+    if (SPOTIFY_CLIENT_ID === '440affc728314810a90812eb4abb1651') {
+      alert('⚠️ sc.js 상단의 SPOTIFY_CLIENT_ID를 Spotify Developer Dashboard에서 발급받은 값으로 교체하세요!\n\nhttps://developer.spotify.com/dashboard');
       return;
     }
     const verifier  = generateRandom(64);
@@ -2067,19 +2048,34 @@ if (isHidden) {
 
   // ── embed 로드 ────────────────────────────────────────────────
   function loadEmbed(uri) {
-    // uri 예: spotify:track:xxx  또는  spotify:playlist:xxx
     const parts = uri.split(':');
     if (parts.length < 3) return;
-    const url = `https://open.spotify.com/embed/${parts[1]}/${parts[2]}?utm_source=generator&theme=0`;
+    const type = parts[1];
+    const id   = parts[2];
+    const url  = `https://open.spotify.com/embed/${type}/${id}?utm_source=generator&theme=0`;
     spotifyEmbed.src = url;
     spotifyEmbed.style.display = 'block';
+    const volNote = document.querySelector('.spotify-volume-note');
+    if (volNote) volNote.style.display = 'block';
 
-    // 레코드판 업데이트 시도 (트랙인 경우)
-    if (parts[1] === 'track' && accessToken) {
-      spotifyApi('/tracks/' + parts[2]).then(track => {
-        const img = track?.album?.images?.[0]?.url;
-        if (img) syncAlbumArt(img, track.name, track.artists?.[0]?.name);
-      }).catch(()=>{});
+    // 레코드판 업데이트
+    if (accessToken) {
+      if (type === 'track') {
+        spotifyApi('/tracks/' + id).then(t => {
+          const img = t?.album?.images?.[0]?.url;
+          if (img) syncAlbumArt(img, t.name, t.artists?.[0]?.name);
+        }).catch(()=>{});
+      } else if (type === 'playlist') {
+        spotifyApi('/playlists/' + id + '?fields=name,images').then(p => {
+          const img = p?.images?.[0]?.url;
+          if (img) syncAlbumArt(img, p.name, 'Spotify 플레이리스트');
+        }).catch(()=>{});
+      } else if (type === 'album') {
+        spotifyApi('/albums/' + id).then(a => {
+          const img = a?.images?.[0]?.url;
+          if (img) syncAlbumArt(img, a.name, a.artists?.[0]?.name);
+        }).catch(()=>{});
+      }
     }
   }
 
@@ -2088,11 +2084,11 @@ if (isHidden) {
     const albumImg= document.getElementById('albumCoverImage');
     const bar     = document.getElementById('trackInfoBar');
     const rWrapper= document.getElementById('rotatingWrapper');
-    if (imgUrl)  { rIcon.src = imgUrl; if(albumImg) albumImg.src = imgUrl; }
+    if (rIcon && imgUrl)   { rIcon.src = imgUrl; }
+    if (albumImg && imgUrl){ albumImg.src = imgUrl; }
     if (bar)     { bar.textContent = `🎵 ${name||'Spotify'} - ${artist||''}`; bar.classList.add('active'); }
     if (rWrapper){ rWrapper.style.display = 'block'; rWrapper.classList.add('spotify-mode'); }
-    const rIconEl = document.getElementById('rotatingIcon');
-    if (rIconEl) { rIconEl.classList.remove('paused'); rIconEl.classList.add('rotating'); }
+    if (rIcon)   { rIcon.classList.remove('paused'); rIcon.classList.add('rotating'); }
   }
 
   // ── URL 직접 입력 ─────────────────────────────────────────────
@@ -2115,31 +2111,121 @@ if (isHidden) {
   spotifySearchInput && spotifySearchInput.addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
 
   async function doSearch() {
-    const q = spotifySearchInput.value.trim();
+    const q = spotifySearchInput ? spotifySearchInput.value.trim() : '';
     if (!q || !accessToken) return;
     spotifySearchResults.innerHTML = '<div class="spotify-list-loading">검색 중...</div>';
     try {
       const data = await spotifyApi('/search', { q, type: 'track,playlist', limit: 20 });
       const items = [
-        ...(data.tracks?.items  || []).map(t => ({ type:'track',    id:t.id, name:t.name, sub: t.artists?.map(a=>a.name).join(', '), img: t.album?.images?.[2]?.url || t.album?.images?.[0]?.url })),
-        ...(data.playlists?.items||[]).map(p => ({ type:'playlist', id:p.id, name:p.name, sub: `${p.tracks?.total||0}곡`, img: p.images?.[0]?.url })),
+        ...(data.tracks?.items  || []).map(t => ({
+          type:'track', id:t.id, name:t.name,
+          sub: t.artists?.map(a=>a.name).join(', '),
+          img: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url
+        })),
+        ...(data.playlists?.items||[]).filter(Boolean).map(p => ({
+          type:'playlist', id:p.id, name:p.name,
+          sub: `${p.tracks?.total ?? '?'}곡`,
+          img: p.images?.[0]?.url
+        })),
       ];
       renderList(spotifySearchResults, items);
-    } catch(e) { spotifySearchResults.innerHTML = '<div class="spotify-list-empty">검색 실패</div>'; }
+    } catch(e) {
+      console.error('Spotify search error:', e);
+      spotifySearchResults.innerHTML = '<div class="spotify-list-empty">검색 실패 — 토큰을 확인해주세요</div>';
+    }
   }
 
-  // ── 내 플레이리스트 ───────────────────────────────────────────
+  // ── 내 플레이리스트 (폴더 분류 + 정확한 곡수) ────────────────
   async function loadMyPlaylists() {
     spotifyMyPlaylists.innerHTML = '<div class="spotify-list-loading">불러오는 중...</div>';
     try {
-      const data = await spotifyApi('/me/playlists', { limit: 50 });
-      const items = (data.items||[]).map(p => ({
-        type:'playlist', id:p.id, name:p.name,
-        sub: `${p.tracks?.total||0}곡`,
-        img: p.images?.[0]?.url
-      }));
-      renderList(spotifyMyPlaylists, items);
-    } catch(e) { spotifyMyPlaylists.innerHTML = '<div class="spotify-list-empty">불러오기 실패</div>'; }
+      // 최대 50개씩 페이지네이션
+      let items = [];
+      let url = '/me/playlists?limit=50';
+      while (url) {
+        const data = await spotifyApi(url.replace('https://api.spotify.com/v1',''));
+        items = items.concat(data.items || []);
+        url = data.next ? data.next : null;
+      }
+
+      // 폴더 분류: 플레이리스트 이름이 "[폴더명] 이름" 형태면 폴더로 묶음
+      // 아니면 이름에 " / " 또는 첫 단어를 폴더로 사용할 수도 있지만
+      // Spotify API는 폴더 정보를 제공하지 않으므로
+      // description에 #태그가 있으면 그걸 폴더로 분류
+      const folders = {}; // { folderName: [playlist, ...] }
+      const noFolder = [];
+
+      items.forEach(p => {
+        if (!p) return;
+        // name이 "폴더명/플리이름" 형태인지 체크
+        const slashIdx = p.name.indexOf('/');
+        if (slashIdx > 0 && slashIdx < p.name.length - 1) {
+          const folder = p.name.slice(0, slashIdx).trim();
+          const pName  = p.name.slice(slashIdx + 1).trim();
+          if (!folders[folder]) folders[folder] = [];
+          folders[folder].push({ ...p, displayName: pName });
+        } else {
+          noFolder.push({ ...p, displayName: p.name });
+        }
+      });
+
+      spotifyMyPlaylists.innerHTML = '';
+
+      // 폴더 있는 것들 먼저
+      Object.entries(folders).forEach(([folderName, playlists]) => {
+        const folderEl = document.createElement('div');
+        folderEl.className = 'spotify-folder';
+
+        const folderHeader = document.createElement('button');
+        folderHeader.className = 'spotify-folder-header';
+        folderHeader.innerHTML = `<span class="spotify-folder-icon">📁</span><span>${folderName}</span><span class="spotify-folder-count">${playlists.length}</span><span class="spotify-folder-arrow">▼</span>`;
+
+        const folderContent = document.createElement('div');
+        folderContent.className = 'spotify-folder-content open';
+
+        playlists.forEach(p => {
+          folderContent.appendChild(makePlaylistItem(p, p.displayName));
+        });
+
+        folderHeader.addEventListener('click', () => {
+          folderContent.classList.toggle('open');
+          folderHeader.querySelector('.spotify-folder-arrow').textContent =
+            folderContent.classList.contains('open') ? '▼' : '▶';
+        });
+
+        folderEl.appendChild(folderHeader);
+        folderEl.appendChild(folderContent);
+        spotifyMyPlaylists.appendChild(folderEl);
+      });
+
+      // 폴더 없는 것들
+      noFolder.forEach(p => {
+        spotifyMyPlaylists.appendChild(makePlaylistItem(p, p.displayName));
+      });
+
+      if (spotifyMyPlaylists.children.length === 0) {
+        spotifyMyPlaylists.innerHTML = '<div class="spotify-list-empty">플레이리스트가 없습니다</div>';
+      }
+    } catch(e) {
+      console.error('loadMyPlaylists error:', e);
+      spotifyMyPlaylists.innerHTML = '<div class="spotify-list-empty">불러오기 실패</div>';
+    }
+  }
+
+  function makePlaylistItem(p, displayName) {
+    const btn = document.createElement('button');
+    btn.className = 'spotify-list-item';
+    // tracks.total은 API 응답에 직접 있음
+    const total = p.tracks?.total ?? '?';
+    btn.innerHTML = `
+      <img src="${p.images?.[0]?.url || ''}" onerror="this.style.visibility='hidden'" alt="">
+      <div class="spotify-list-item-info">
+        <div class="spotify-list-item-title">${displayName || p.name}</div>
+        <div class="spotify-list-item-sub">${total}곡</div>
+      </div>
+    `;
+    btn.addEventListener('click', () => loadEmbed(`spotify:playlist:${p.id}`));
+    return btn;
   }
 
   // ── 좋아요 곡 ─────────────────────────────────────────────────
@@ -2150,7 +2236,7 @@ if (isHidden) {
       const items = (data.items||[]).map(({ track: t }) => ({
         type:'track', id:t.id, name:t.name,
         sub: t.artists?.map(a=>a.name).join(', '),
-        img: t.album?.images?.[2]?.url || t.album?.images?.[0]?.url
+        img: t.album?.images?.[1]?.url || t.album?.images?.[0]?.url
       }));
       renderList(spotifySavedTracks, items);
     } catch(e) { spotifySavedTracks.innerHTML = '<div class="spotify-list-empty">불러오기 실패</div>'; }
