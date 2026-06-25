@@ -70,39 +70,12 @@
         <div class="icon-grid" id="iconGrid"></div>
       </div>
 
-      <!-- 오른쪽: 고정된 Spotify 플레이리스트 영역 -->
-      <div class="playlist-column">
-        <!-- 각 iframe은 Spotify에서 공유한 플레이리스트를 삽입 -->
-        <iframe src="https://open.spotify.com/embed/playlist/0znvYX1Wd2KeE80lEfgYWU?si=be53610498df4771&utm_source=generator" 
-          frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy"></iframe>
-
-        <iframe src="https://open.spotify.com/embed/playlist/1NpUHfTxcSsdIT1vNyXc1U?si=dedd3882dfd54eca&utm_source=generator" 
-          frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy"></iframe>
-
-        <iframe src="https://open.spotify.com/embed/playlist/3GjnImUmFxBYnWwBho6SE8?si=68e7836172484ff2&utm_source=generator" 
-          frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy"></iframe>
-
-        <iframe src="https://open.spotify.com/embed/playlist/59PXvtjDCzcCndx59QkiSH?si=13fc65aa3ee84e29&utm_source=generator" 
-          frameborder="0" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
-          loading="lazy"></iframe>
-      </div>
-    </div>
-
-    <!-- 볼륨 조절 슬라이더 -->
-    <div class="volume-control" style="font-family: 'Maplestory', sans-serif; font-weight: bold;">
-      🔉 Volume: 
-      <input type="range" id="volumeSlider" min="0.01" max="1" step="0.01" value="0.1">
-      <!-- 슬라이더를 움직이면 JavaScript에서 볼륨이 조정됨 -->
-    </div>
-
     <!-- 오디오 재생을 위한 audio 요소 (보이지 않음) -->
     <audio id="myAudio"></audio>
 
     <!-- 곡 이름 표시 바 -->
     <div id="trackInfoBar" class="track-info-bar">재생 중: 없음</div>
+  </div>
 
     <div class="audio-controls">
       <button id="rewindBtn">⏪</button> <!-- 10초 뒤로 -->
@@ -128,7 +101,6 @@
     class="custom-tooltip"
     data-tooltip="곡 추천"
     target="_blank">📗</a>
-  </div>
 
   <!-- 이미지 회전용 구조 -->
   <div id="albumCoverWrapper">
@@ -136,6 +108,13 @@
       <img id="rotatingIcon" src="assets/images/missing.png" alt="Rotating Album">
     </div>
     <img id="albumCoverImage" src="assets/images/missing.png" alt="Album Art">
+  </div>
+
+      <!-- 볼륨 조절 슬라이더 -->
+  <div class="volume-control" style="font-family: 'Maplestory', sans-serif; font-weight: bold;">
+    🔉 Volume: 
+    <input type="range" id="volumeSlider" min="0.01" max="1" step="0.01" value="0.1">
+    <!-- 슬라이더를 움직이면 JavaScript에서 볼륨이 조정됨 -->
   </div>
   
   <!-- 좌측 하단에 화살표 버튼 + 정보 박스 -->
@@ -171,8 +150,133 @@
     </div>
   </div>
 
+  <!-- 🎚️ Equalizer (hideable 밖 — f키 영향 안 받음) -->
+  <div id="equalizerContainer" class="panel">
+    <div class="eq-control-buttons" style="text-align:center; margin-top: 20px;">
+      <button class="reset-eq-btn">🎛️</button>
+      <button class="restore-eq-btn">🔄</button>
+    </div>
+    <h2>🎚️ Equalizer</h2>
+    <div class="slider-row">
+      <div class="slider-group">
+        <label for="eq-bass">Bass</label>
+        <input type="range" id="eq-bass" class="vertical-slider" min="-10" max="10" value="0">
+        <span id="val-bass">0</span>
+      </div>
+      <div class="slider-group">
+        <label for="eq-mid">Mid</label>
+        <input type="range" id="eq-mid" class="vertical-slider" min="-10" max="10" value="0">
+        <span id="val-mid">0</span>
+      </div>
+      <div class="slider-group">
+        <label for="eq-treble">Treble</label>
+        <input type="range" id="eq-treble" class="vertical-slider" min="-10" max="10" value="0">
+        <span id="val-treble">0</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bass Booster (hideable 밖) -->
+  <div id="boosterContainer" class="panel">
+    <div class="eq-control-buttons" style="text-align:center; margin-top: 20px;">
+      <button class="reset-boost-btn">🎛️</button>
+      <button class="restore-boost-btn">🔄</button>
+    </div>
+    <h2>Bass Booster</h2>
+    <div class="booster-slider-group" style="display:flex; justify-content:center; align-items:flex-end; gap:40px; width:100%;">
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <label for="bass-boost">Boost</label>
+        <input type="range" min="0" max="10" value="0" id="bass-boost" class="vertical-slider">
+        <span id="val-boost">0</span>
+      </div>
+      <div style="display:flex; flex-direction:column; align-items:center;">
+        <label for="volume-boost">Volume</label>
+        <input type="range" min="-10" max="10" value="1" step="1" id="volume-boost" class="vertical-slider">
+        <span id="val-volboost">1</span>
+      </div>
+    </div>
+  </div>
+
   <div id="bgOverlay"></div>
 
+  <!-- 🎵 Spotify 패널 (왼쪽으로 열림) -->
+  <div id="spotifyPanel" class="spotify-panel hidden-panel">
+
+    <!-- 헤더 -->
+    <div class="spotify-panel-header">
+      <span class="spotify-logo">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="#1DB954"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+        Spotify
+      </span>
+      <div style="display:flex;gap:6px;align-items:center;">
+        <span id="spotifyUserInfo" class="spotify-user-info" style="display:none;"></span>
+        <button id="spotifyLoginBtn" class="spotify-login-btn">로그인</button>
+        <button id="spotifyLogoutBtn" class="spotify-logout-btn" style="display:none;">로그아웃</button>
+        <button id="spotifyCloseBtn" class="spotify-close-btn">✕</button>
+      </div>
+    </div>
+
+    <!-- 로그인 전 안내 -->
+    <div id="spotifyLoginPrompt" class="spotify-login-prompt">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="#1DB954" opacity="0.7"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      <p>Spotify 계정으로 로그인하면<br>검색·내 플레이리스트를 이용할 수 있어요</p>
+      <button class="spotify-login-big-btn" id="spotifyLoginBigBtn">Spotify로 로그인</button>
+      <div class="spotify-divider"><span>또는 URL 직접 입력</span></div>
+      <div class="spotify-input-row">
+        <input id="spotifyUriInput" class="spotify-uri-input" type="text" placeholder="https://open.spotify.com/playlist/..." />
+        <button id="spotifyLoadBtn" class="spotify-load-btn">▶</button>
+      </div>
+    </div>
+
+    <!-- 로그인 후 메인 UI -->
+    <div id="spotifyLoggedIn" style="display:none;">
+
+      <!-- 탭 -->
+      <div class="spotify-tabs">
+        <button class="spotify-tab active" data-tab="search">검색</button>
+        <button class="spotify-tab" data-tab="playlists">내 플레이리스트</button>
+        <button class="spotify-tab" data-tab="saved">좋아요 곡</button>
+      </div>
+
+      <!-- 검색 탭 -->
+      <div id="spotifyTabSearch" class="spotify-tab-content active">
+        <div class="spotify-search-row">
+          <input id="spotifySearchInput" class="spotify-uri-input" type="text" placeholder="곡, 아티스트, 플레이리스트 검색..." />
+          <button id="spotifySearchBtn" class="spotify-load-btn">🔍</button>
+        </div>
+        <div id="spotifySearchResults" class="spotify-list"></div>
+      </div>
+
+      <!-- 내 플레이리스트 탭 -->
+      <div id="spotifyTabPlaylists" class="spotify-tab-content">
+        <div id="spotifyMyPlaylists" class="spotify-list"></div>
+      </div>
+
+      <!-- 좋아요 곡 탭 -->
+      <div id="spotifyTabSaved" class="spotify-tab-content">
+        <div id="spotifySavedTracks" class="spotify-list"></div>
+      </div>
+    </div>
+
+    <!-- 공통 embed 영역 (항상 표시) -->
+    <div id="spotifyEmbedArea" style="margin-top:10px;">
+      <iframe id="spotifyEmbed"
+        src=""
+        width="100%"
+        height="152"
+        frameborder="0"
+        allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture"
+        style="border-radius:10px; display:none;">
+      </iframe>
+    </div>
+  </div>
+
+  <!-- 🎵 Spotify 사이드 버튼 — script 위에 있어야 getElementById가 작동함 -->
+  <button id="spotifySideBtn" class="spotify-side-btn" title="Spotify">
+    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+  </button>
+
   <script src="sc.js"></script>
+  <script src="https://open.spotify.com/embed/iframe-api/v1" async></script>
 </body>
 </html>
