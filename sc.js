@@ -1,3 +1,184 @@
+const queueContainer = document.getElementById('queueContainer');
+
+document.addEventListener('DOMContentLoaded', () => {
+  const audio = document.getElementById('myAudio');
+
+  const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  const sourceNode = audioCtx.createMediaElementSource(audio);
+
+  // 필터
+  const bassFilter = audioCtx.createBiquadFilter();
+  bassFilter.type = 'lowshelf';
+  bassFilter.frequency.value = 200;
+
+  const midFilter = audioCtx.createBiquadFilter();
+  midFilter.type = 'peaking';
+  midFilter.frequency.value = 1000;
+  midFilter.Q.value = 1;
+
+  const trebleFilter = audioCtx.createBiquadFilter();
+  trebleFilter.type = 'highshelf';
+  trebleFilter.frequency.value = 3000;
+
+  const boosterGain = audioCtx.createGain();
+
+  // 연결 구성
+  sourceNode
+  .connect(bassFilter)
+  .connect(midFilter)
+  .connect(trebleFilter)
+  .connect(boosterGain)
+  .connect(audioCtx.destination);
+
+  // bass boost는 filter 게인과 분리 적용
+  let bassBoostValue = 0;
+
+  const sliderMap = {
+    'eq-bass': bassFilter.gain,
+    'eq-mid': midFilter.gain,
+    'eq-treble': trebleFilter.gain
+  };
+
+  const sliders = [
+    { id: 'eq-bass', output: 'val-bass' },
+    { id: 'eq-mid', output: 'val-mid' },
+    { id: 'eq-treble', output: 'val-treble' },
+    { id: 'bass-boost', output: 'val-boost' }
+  ];
+
+  const previousValues = {
+    'eq-bass': parseFloat(document.getElementById('eq-bass')?.value || 0),
+    'eq-mid': parseFloat(document.getElementById('eq-mid')?.value || 0),
+    'eq-treble': parseFloat(document.getElementById('eq-treble')?.value || 0),
+  };
+
+  sliders.forEach(({ id, output }) => {
+    const slider = document.getElementById(id);
+    const valueDisplay = document.getElementById(output);
+    if (!slider || !valueDisplay) return;
+
+    valueDisplay.textContent = slider.value;
+
+    slider.addEventListener('input', () => {
+      const val = parseFloat(slider.value);
+      previousValues[id] = val;
+      valueDisplay.textContent = val;
+      sliderMap[id].value = id === 'bass-boost' ? val / 2 : val;
+    });
+
+    valueDisplay.addEventListener('click', () => {
+      if (valueDisplay.textContent === '🔇') {
+        // 복원
+        const original = previousValues[id] ?? 0;
+        valueDisplay.textContent = original;
+        slider.value = original;
+
+        if (id === 'bass-boost') {
+          bassBoostValue = original;
+          const bassVal = parseFloat(document.getElementById('eq-bass').value);
+          bassFilter.gain.value = bassVal + bassBoostValue;
+        } else {
+          sliderMap[id].value = original;
+          if (id === 'eq-bass') {
+            bassFilter.gain.value = original + bassBoostValue;
+          }
+        }
+      } else {
+        // 음소거
+        previousValues[id] = parseFloat(slider.value);
+        valueDisplay.textContent = '🔇';
+        slider.value = 0;
+
+        if (id === 'bass-boost') {
+          bassBoostValue = 0;
+          const bassVal = parseFloat(document.getElementById('eq-bass').value);
+          bassFilter.gain.value = bassVal; // booster 0이어도 bass 유지
+        } else {
+          sliderMap[id].value = 0;
+          if (id === 'eq-bass') {
+            bassFilter.gain.value = bassBoostValue; // bass EQ 0 + booster 유지
+          }
+        }
+      }
+    });
+    
+    const boosterSlider = document.getElementById('bass-boost');
+    const boosterValue = document.getElementById('val-boost');
+
+    if (boosterSlider && boosterValue) {
+      boosterSlider.addEventListener('input', () => {
+        bassBoostValue = parseFloat(boosterSlider.value);
+        boosterValue.textContent = boosterSlider.value;
+
+        const bassSlider = document.getElementById('eq-bass');
+        const bassVal = parseFloat(bassSlider?.value || 0);
+        bassFilter.gain.value = bassVal + bassBoostValue;
+      });
+    }
+    const volumeSlider = document.getElementById('volumeSlider');
+    const volumeBoostSlider = document.getElementById('volume-boost');
+    const valVolBoost = document.getElementById('val-volboost');
+
+    let volumeBoostValue = 1;
+
+    function calculateBoostMultiplier(boost) {
+      // -10 → 0.1, -5 → 0.5, 0 → 1.0, 5 → 5.0, 10 → 10.0
+      if (boost < 0) return 1 + boost / 10; // e.g. -5 → 1 - 0.5 = 0.5
+      else return 1 + boost;               // e.g. 5 → 1 + 5 = 6
+    }
+
+    function applyVolumeBoost() {
+      const boost = parseInt(volumeBoostSlider.value);
+      volumeBoostValue = boost;
+      valVolBoost.textContent = boost;
+
+      const baseVolume = parseFloat(volumeSlider.value);
+      const multiplier = calculateBoostMultiplier(boost);
+      const finalVolume = baseVolume * multiplier;
+
+      audio.volume = Math.max(0, Math.min(1, finalVolume));
+    }
+
+    volumeBoostSlider.addEventListener('input', applyVolumeBoost);
+    volumeSlider.addEventListener('input', applyVolumeBoost);
+  });
+
+    // ✅ 🎛️ reset-eq-btn: 초기화 버튼
+  document.querySelector('.reset-eq-btn')?.addEventListener('click', () => {
+    ['eq-bass', 'eq-mid', 'eq-treble'].forEach(id => {
+      const slider = document.getElementById(id);
+      const valDisplay = document.getElementById(`val-${id.split('-')[1]}`);
+      slider.value = 0;
+      valDisplay.textContent = '0';
+      previousValues[id] = 0;
+
+      if (id === 'eq-bass') {
+        bassFilter.gain.value = bassBoostValue;
+      } else {
+        sliderMap[id].value = 0;
+      }
+    });
+  });
+
+    // ✅ 🔄 restore-eq-btn: 이전값 복원 버튼
+      document.querySelector('.restore-eq-btn')?.addEventListener('click', () => {
+    ['eq-bass', 'eq-mid', 'eq-treble'].forEach(id => {
+      const restored = previousValues[id] ?? 0;
+      const slider = document.getElementById(id);
+      const valDisplay = document.getElementById(`val-${id.split('-')[1]}`);
+
+      slider.value = restored;
+      valDisplay.textContent = restored;
+
+      if (id === 'eq-bass') {
+        bassFilter.gain.value = restored + bassBoostValue;
+      } else {
+        sliderMap[id].value = restored;
+      }
+    });
+  });
+});
+
 let currentTrackSrc = null;
 let rollingTimeout = null;
 
@@ -505,7 +686,7 @@ const trackNames = {
 };
 
 const mainContainer = document.querySelector('.main-container');
-const playlistColumn = document.querySelector('.playlist-column');
+
 let hidden = false;
 
 const fadeIn = (element) => {
@@ -534,7 +715,6 @@ document.addEventListener('keydown', (e) => {
       wasClockVisibleBeforeHide = clockBox.classList.contains('active');
 
       fadeOut(mainContainer);
-      fadeOut(playlistColumn);
 
       if (wasClockVisibleBeforeHide) {
         clockBox.classList.remove('active');
@@ -547,7 +727,6 @@ document.addEventListener('keydown', (e) => {
 
     } else {
       fadeIn(mainContainer);
-      fadeIn(playlistColumn);
 
       // 👉 clockBox가 원래 켜져 있었으면 다시 보여줌
       if (wasClockVisibleBeforeHide) {
@@ -791,15 +970,13 @@ const toggleViewBtn = document.getElementById('toggleViewBtn');
 toggleViewBtn.addEventListener('click', () => {
   if (!hidden) {
     fadeOut(mainContainer);
-    fadeOut(playlistColumn);
     hidden = true;
 
     // 👉 대기열 숨기기
     queueContainer.classList.remove('show');
 
   } else {
-    fadeIn(mainContainer);
-    fadeIn(playlistColumn);
+    fadeIn(mainContainer);;
     hidden = false;
 
     // 👉 대기열 복원
@@ -1338,8 +1515,6 @@ console.log('Transform:', getComputedStyle(el).transform);
 window.addEventListener('DOMContentLoaded', () => {
   const rotatingWrapper = document.getElementById('rotatingWrapper');
   const rotatingIcon = document.getElementById('rotatingIcon');
-  const mainContainer = document.getElementById('mainContainer');
-  const playlistColumn = document.getElementById('playlistColumn');
 
   // ✅ 초기 위치 설정
   rotatingWrapper.style.transform = 'translate(-50%, -50%)';
@@ -1356,7 +1531,6 @@ window.addEventListener('DOMContentLoaded', () => {
 
   // ✅ UI 페이드인 효과
   mainContainer.classList.add('fade-in');
-  playlistColumn.classList.add('fade-in');
 });
 
 // ✅ 스페이스바, A키, D키, S키, G키로 조작
@@ -1379,7 +1553,7 @@ window.addEventListener('keydown', (event) => {
   }
   if (event.key === 's' || event.key === 'S') {
     event.preventDefault();
-    stopBtn.click();      // 정지 버튼
+    playPauseBtn.click();      // 정지 버튼
   }
   if (event.key === 'i' || event.key === 'I') {
     event.preventDefault();
@@ -1406,3 +1580,616 @@ document.addEventListener('DOMContentLoaded', () => {
     visitorElement.textContent = visitorCount;
   }
 });
+
+// ✅ 토글 키 이벤트
+let eqVisible = false;
+
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'm') {
+    eqVisible = !eqVisible;
+    const eq = document.getElementById('equalizerContainer');
+    const booster = document.getElementById('boosterContainer');
+
+    if (eqVisible) {
+      eq.style.display = 'block';
+
+      // 베이스 부스터는 약간의 딜레이 후 표시
+      setTimeout(() => {
+        booster.style.display = 'block';
+      }, 300); // 애니메이션 시간 고려
+    } else {
+      eq.style.display = 'none';
+      booster.style.display = 'none';
+    }
+  }
+});
+
+// ✅ 슬라이더 수치 반영
+const sliders = [
+  { id: 'eq-bass', output: 'val-bass' },
+  { id: 'eq-mid', output: 'val-mid' },
+  { id: 'eq-treble', output: 'val-treble' },
+  { id: 'bass-boost', output: 'val-boost' }
+];
+
+const previousValues = {
+  'eq-bass': parseFloat(document.getElementById('eq-bass')?.value || 0),
+  'eq-mid': parseFloat(document.getElementById('eq-mid')?.value || 0),
+  'eq-treble': parseFloat(document.getElementById('eq-treble')?.value || 0),
+};
+
+sliders.forEach(({ id, output }) => {
+  const slider = document.getElementById(id);
+  const valueDisplay = document.getElementById(output);
+  if (!slider || !valueDisplay) return;
+
+  let isMuted = false;
+
+  // 초기 표시
+  const initialValue = parseFloat(slider.value);
+  valueDisplay.textContent = initialValue;
+  previousValues[id] = initialValue;
+
+  // 🎧 슬라이더 변경 시
+  slider.addEventListener('input', () => {
+  const val = parseFloat(slider.value);
+  previousValues[id] = val;
+  valueDisplay.textContent = val;
+
+  if (id === 'bass-boost') {
+    bassBoostValue = val;
+    const bassVal = parseFloat(document.getElementById('eq-bass').value);
+    bassFilter.gain.value = bassVal + bassBoostValue * BOOST_MULTIPLIER;
+  } else {
+    sliderMap[id].value = val;
+    if (id === 'eq-bass') {
+      bassFilter.gain.value = val + bassBoostValue * BOOST_MULTIPLIER;
+    }
+  }
+});
+
+  // 🔇 숫자 클릭 시 음소거 토글
+  valueDisplay.addEventListener('click', () => {
+    if (isMuted) {
+      const prev = previousValues[id] ?? 0;
+      slider.value = prev;
+      valueDisplay.textContent = prev;
+      sliderMap[id].value = id === 'bass-boost' ? prev / 2 : prev;
+      isMuted = false;
+    } else {
+      previousValues[id] = slider.value;
+      slider.value = 0;
+      valueDisplay.textContent = '🔇';
+      sliderMap[id].value = 0;
+      isMuted = true;
+    }
+  });
+});
+
+// 🎛️ 및 🔄 버튼 처리 (Equalizer + Booster 전부 적용)
+document.querySelectorAll('#reset-eq-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sliders.forEach(({ id, output }) => {
+      const slider = document.getElementById(id);
+      const valueDisplay = document.getElementById(output);
+
+      previousValues[id] = parseFloat(slider.value); // 복원용 저장
+      slider.value = 0;
+      valueDisplay.textContent = '0';
+
+      if (id === 'bass-boost') {
+        bassBoostValue = 0;
+        const bassVal = parseFloat(document.getElementById('eq-bass').value);
+        bassFilter.gain.value = bassVal + bassBoostValue * BOOST_MULTIPLIER;
+      } else {
+        sliderMap[id].value = 0;
+        if (id === 'eq-bass') {
+          bassFilter.gain.value = 0 + bassBoostValue * BOOST_MULTIPLIER;
+        }
+      }
+    });
+  });
+});
+
+document.querySelectorAll('#restore-eq-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    sliders.forEach(({ id, output }) => {
+      const slider = document.getElementById(id);
+      const valueDisplay = document.getElementById(output);
+
+      const original = previousValues[id] ?? 0;
+      slider.value = original;
+      valueDisplay.textContent = original;
+
+      if (id === 'bass-boost') {
+        bassBoostValue = original;
+        const bassVal = parseFloat(document.getElementById('eq-bass').value);
+        bassFilter.gain.value = bassVal + bassBoostValue * BOOST_MULTIPLIER;
+      } else {
+        sliderMap[id].value = original;
+        if (id === 'eq-bass') {
+          bassFilter.gain.value = original + bassBoostValue * BOOST_MULTIPLIER;
+        }
+      }
+    });
+  });
+});
+
+// 🎛️ Equalizer 리셋
+document.querySelectorAll('.reset-eq-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    ['eq-bass', 'eq-mid', 'eq-treble'].forEach(id => {
+      const slider = document.getElementById(id);
+      const valDisplay = document.getElementById('val-' + id.split('-')[1]);
+      previousValues[id] = parseFloat(slider.value);
+      slider.value = 0;
+      valDisplay.textContent = '0';
+
+      if (sliderMap[id]) {
+        sliderMap[id].value = 0;
+      }
+
+      if (id === 'eq-bass') {
+        bassFilter.gain.value = bassBoostValue * BOOST_MULTIPLIER;
+      } else if (id === 'eq-mid') {
+        midFilter.gain.value = 0;
+      } else if (id === 'eq-treble') {
+        trebleFilter.gain.value = 0;
+      }
+    });
+  });
+});
+
+// 🔄 Equalizer 복원
+document.querySelectorAll('.restore-eq-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    ['eq-bass', 'eq-mid', 'eq-treble'].forEach(id => {
+      const slider = document.getElementById(id);
+      const valDisplay = document.getElementById('val-' + id.split('-')[1]);
+      const original = previousValues[id] ?? 0;
+      slider.value = original;
+      valDisplay.textContent = original;
+
+      if (sliderMap[id]) {
+        sliderMap[id].value = original;
+      }
+
+      if (id === 'eq-bass') {
+        bassFilter.gain.value = original + bassBoostValue * BOOST_MULTIPLIER;
+      } else if (id === 'eq-mid') {
+        midFilter.gain.value = original;
+      } else if (id === 'eq-treble') {
+        trebleFilter.gain.value = original;
+      }
+    });
+  });
+});
+
+// 🎛️ Booster 리셋
+document.querySelectorAll('.reset-boost-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const slider = document.getElementById('bass-boost');
+    const display = document.getElementById('val-boost');
+    previousValues['bass-boost'] = parseFloat(slider.value);
+    slider.value = 0;
+    display.textContent = '0';
+    bassBoostValue = 0;
+    const bassVal = parseFloat(document.getElementById('eq-bass').value);
+    bassFilter.gain.value = bassVal;
+  });
+});
+
+// 🔄 Booster 복원
+document.querySelectorAll('.restore-boost-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    const slider = document.getElementById('bass-boost');
+    const display = document.getElementById('val-boost');
+    const val = previousValues['bass-boost'] ?? 0;
+    slider.value = val;
+    display.textContent = val;
+    bassBoostValue = val;
+    const bassVal = parseFloat(document.getElementById('eq-bass').value);
+    bassFilter.gain.value = bassVal + bassBoostValue * BOOST_MULTIPLIER;
+  });
+});
+
+// ── M키: EQ / Booster 패널 토글 ──────────────────────────────
+let isPanelVisible = false;
+let isAnimatingM = false;
+
+function showPanels() {
+  if (isAnimatingM) return;
+  isAnimatingM = true;
+  isPanelVisible = true; // 즉시 플래그 설정 (중복 호출 방지)
+  const eq = document.getElementById('equalizerContainer');
+  const boost = document.getElementById('boosterContainer');
+
+  eq.classList.remove('panel-hidden');
+  boost.classList.remove('panel-hidden');
+
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => {
+      eq.classList.add('panel-visible');
+      setTimeout(() => {
+        boost.classList.add('panel-visible');
+        isAnimatingM = false;
+      }, 60);
+    });
+  });
+}
+
+function hidePanels() {
+  if (isAnimatingM) return;
+  isAnimatingM = true;
+  isPanelVisible = false; // 즉시 플래그 설정
+  const eq = document.getElementById('equalizerContainer');
+  const boost = document.getElementById('boosterContainer');
+
+  eq.classList.remove('panel-visible');
+  boost.classList.remove('panel-visible');
+  eq.classList.add('panel-hidden');
+  boost.classList.add('panel-hidden');
+
+  setTimeout(() => {
+    isAnimatingM = false;
+  }, 450);
+}
+
+document.addEventListener('keydown', (e) => {
+  if (e.key.toLowerCase() === 'm') {
+    if (isPanelVisible) {
+      hidePanels();
+    } else {
+      showPanels();
+    }
+  }
+});
+
+
+function toggleUI() {
+  const hideable = document.querySelector('.hideable');
+  const isHidden = hideable.classList.contains('fade-out');
+
+  if (isHidden) {
+    hideable.classList.remove('fade-out');
+    hideable.classList.add('fade-in');
+  } else {
+    hideable.classList.remove('fade-in');
+    hideable.classList.add('fade-out');
+    // 패널이 열려있으면 같이 닫기
+    if (isPanelVisible) hidePanels();
+  }
+}
+
+const isHidden = queueContainer.classList.contains('fade-out');
+
+if (isHidden) {
+  queueContainer.classList.remove('fade-out');
+  queueContainer.classList.add('fade-in');
+} else {
+  queueContainer.classList.remove('fade-in');
+  queueContainer.classList.add('fade-out');
+}
+// ══════════════════════════════════════
+// 🎵 Spotify 위젯 (OAuth PKCE + API)
+// ══════════════════════════════════════
+(function () {
+
+  // ── 설정 ─────────────────────────────────────────────────────
+  // ⚠️ Spotify Developer Dashboard에서 앱 만든 뒤 아래 두 값을 교체하세요
+  // Redirect URI도 Dashboard에 등록 필요: 현재 페이지 URL 그대로
+  const SPOTIFY_CLIENT_ID = '440affc728314810a90812eb4abb1651';
+  const REDIRECT_URI      = window.location.origin + window.location.pathname;
+
+  const SCOPES = [
+    'user-read-private',
+    'user-read-email',
+    'playlist-read-private',
+    'playlist-read-collaborative',
+    'user-library-read',
+  ].join(' ');
+
+  // ── DOM ──────────────────────────────────────────────────────
+  const spotifySideBtn      = document.getElementById('spotifySideBtn');
+  const spotifyPanel        = document.getElementById('spotifyPanel');
+  const spotifyCloseBtn     = document.getElementById('spotifyCloseBtn');
+  const spotifyLoginBtn     = document.getElementById('spotifyLoginBtn');
+  const spotifyLoginBigBtn  = document.getElementById('spotifyLoginBigBtn');
+  const spotifyLogoutBtn    = document.getElementById('spotifyLogoutBtn');
+  const spotifyUserInfo     = document.getElementById('spotifyUserInfo');
+  const spotifyLoginPrompt  = document.getElementById('spotifyLoginPrompt');
+  const spotifyLoggedIn     = document.getElementById('spotifyLoggedIn');
+  const spotifyUriInput     = document.getElementById('spotifyUriInput');
+  const spotifyLoadBtn      = document.getElementById('spotifyLoadBtn');
+  const spotifySearchInput  = document.getElementById('spotifySearchInput');
+  const spotifySearchBtn    = document.getElementById('spotifySearchBtn');
+  const spotifySearchResults= document.getElementById('spotifySearchResults');
+  const spotifyMyPlaylists  = document.getElementById('spotifyMyPlaylists');
+  const spotifySavedTracks  = document.getElementById('spotifySavedTracks');
+  const spotifyEmbed        = document.getElementById('spotifyEmbed');
+
+  let isSpotifyOpen = false;
+  let accessToken   = null;
+
+  // ── 패널 토글 ────────────────────────────────────────────────
+  function openPanel()  { spotifyPanel.classList.remove('hidden-panel'); spotifySideBtn.classList.add('active'); isSpotifyOpen = true; }
+  function closePanel() { spotifyPanel.classList.add('hidden-panel');    spotifySideBtn.classList.remove('active'); isSpotifyOpen = false; }
+
+  if (!spotifySideBtn || !spotifyPanel) return; // 요소 없으면 중단
+  spotifySideBtn.addEventListener('click', () => isSpotifyOpen ? closePanel() : openPanel());
+  spotifyCloseBtn && spotifyCloseBtn.addEventListener('click', closePanel);
+
+  // ── PKCE 유틸 ────────────────────────────────────────────────
+  function generateRandom(len) {
+    const arr = new Uint8Array(len);
+    crypto.getRandomValues(arr);
+    return Array.from(arr, b => ('0' + b.toString(16)).slice(-2)).join('');
+  }
+  async function sha256(plain) {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(plain);
+    return crypto.subtle.digest('SHA-256', data);
+  }
+  function base64UrlEncode(buf) {
+    return btoa(String.fromCharCode(...new Uint8Array(buf)))
+      .replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+  }
+
+  // ── 로그인 (PKCE) ─────────────────────────────────────────────
+  async function startLogin() {
+    if (SPOTIFY_CLIENT_ID === '440affc728314810a90812eb4abb1651') {
+      alert('⚠️ sc.js 상단의 SPOTIFY_CLIENT_ID를 Spotify Developer Dashboard에서 발급받은 값으로 교체하세요!\n\nhttps://developer.spotify.com/dashboard');
+      return;
+    }
+    const verifier  = generateRandom(64);
+    const challenge = base64UrlEncode(await sha256(verifier));
+    const state     = generateRandom(16);
+
+    sessionStorage.setItem('spotify_verifier', verifier);
+    sessionStorage.setItem('spotify_state',    state);
+
+    const params = new URLSearchParams({
+      response_type: 'code',
+      client_id:     SPOTIFY_CLIENT_ID,
+      scope:         SCOPES,
+      redirect_uri:  REDIRECT_URI,
+      state,
+      code_challenge_method: 'S256',
+      code_challenge:        challenge,
+    });
+    window.location.href = 'https://accounts.spotify.com/authorize?' + params;
+  }
+
+  // ── 콜백 처리 (페이지 로드 시) ───────────────────────────────
+  async function handleCallback() {
+    const params   = new URLSearchParams(window.location.search);
+    const code     = params.get('code');
+    const state    = params.get('state');
+    const verifier = sessionStorage.getItem('spotify_verifier');
+    const savedState = sessionStorage.getItem('spotify_state');
+
+    if (!code || !verifier || state !== savedState) return;
+
+    // URL에서 파라미터 제거 (히스토리 클린업)
+    window.history.replaceState({}, '', window.location.pathname);
+    sessionStorage.removeItem('spotify_verifier');
+    sessionStorage.removeItem('spotify_state');
+
+    try {
+      const res = await fetch('https://accounts.spotify.com/api/token', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({
+          grant_type:    'authorization_code',
+          code,
+          redirect_uri:  REDIRECT_URI,
+          client_id:     SPOTIFY_CLIENT_ID,
+          code_verifier: verifier,
+        }),
+      });
+      const data = await res.json();
+      if (data.access_token) {
+        accessToken = data.access_token;
+        // 만료 시간 저장 (초 단위)
+        const expiresAt = Date.now() + data.expires_in * 1000;
+        localStorage.setItem('spotify_token',      accessToken);
+        localStorage.setItem('spotify_expires_at', expiresAt);
+        if (data.refresh_token) localStorage.setItem('spotify_refresh', data.refresh_token);
+        await onLoggedIn();
+        openPanel();
+      }
+    } catch (e) { console.error('Spotify token error', e); }
+  }
+
+  // ── 저장된 토큰 복원 ─────────────────────────────────────────
+  function loadStoredToken() {
+    const token   = localStorage.getItem('spotify_token');
+    const expires = parseInt(localStorage.getItem('spotify_expires_at') || '0');
+    if (token && Date.now() < expires) {
+      accessToken = token;
+      return true;
+    }
+    return false;
+  }
+
+  // ── 로그인 상태 UI 전환 ───────────────────────────────────────
+  async function onLoggedIn() {
+    spotifyLoginPrompt.style.display  = 'none';
+    spotifyLoggedIn.style.display     = 'block';
+    spotifyLoginBtn.style.display     = 'none';
+    spotifyLogoutBtn.style.display    = '';
+    spotifyUserInfo.style.display     = '';
+
+    // 사용자 정보
+    try {
+      const me = await spotifyApi('/me');
+      spotifyUserInfo.textContent = me.display_name || me.id;
+    } catch(e) {}
+
+    loadMyPlaylists();
+    loadSavedTracks();
+  }
+
+  function onLoggedOut() {
+    accessToken = null;
+    localStorage.removeItem('spotify_token');
+    localStorage.removeItem('spotify_expires_at');
+    localStorage.removeItem('spotify_refresh');
+    spotifyLoginPrompt.style.display  = '';
+    spotifyLoggedIn.style.display     = 'none';
+    spotifyLoginBtn.style.display     = '';
+    spotifyLogoutBtn.style.display    = 'none';
+    spotifyUserInfo.style.display     = 'none';
+    spotifyUserInfo.textContent       = '';
+  }
+
+  // ── Spotify API 헬퍼 ─────────────────────────────────────────
+  async function spotifyApi(path, params = {}) {
+    const url = new URL('https://api.spotify.com/v1' + path);
+    Object.entries(params).forEach(([k,v]) => url.searchParams.set(k, v));
+    const res = await fetch(url, {
+      headers: { Authorization: 'Bearer ' + accessToken }
+    });
+    if (!res.ok) throw new Error(res.status);
+    return res.json();
+  }
+
+  // ── 탭 전환 ──────────────────────────────────────────────────
+  document.querySelectorAll('.spotify-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+      document.querySelectorAll('.spotify-tab').forEach(t => t.classList.remove('active'));
+      document.querySelectorAll('.spotify-tab-content').forEach(c => c.classList.remove('active'));
+      tab.classList.add('active');
+      document.getElementById('spotifyTab' + capitalize(tab.dataset.tab)).classList.add('active');
+    });
+  });
+  function capitalize(s) { return s.charAt(0).toUpperCase() + s.slice(1); }
+
+  // ── embed 로드 ────────────────────────────────────────────────
+  function loadEmbed(uri) {
+    // uri 예: spotify:track:xxx  또는  spotify:playlist:xxx
+    const parts = uri.split(':');
+    if (parts.length < 3) return;
+    const url = `https://open.spotify.com/embed/${parts[1]}/${parts[2]}?utm_source=generator&theme=0`;
+    spotifyEmbed.src = url;
+    spotifyEmbed.style.display = 'block';
+
+    // 레코드판 업데이트 시도 (트랙인 경우)
+    if (parts[1] === 'track' && accessToken) {
+      spotifyApi('/tracks/' + parts[2]).then(track => {
+        const img = track?.album?.images?.[0]?.url;
+        if (img) syncAlbumArt(img, track.name, track.artists?.[0]?.name);
+      }).catch(()=>{});
+    }
+  }
+
+  function syncAlbumArt(imgUrl, name, artist) {
+    const rIcon   = document.getElementById('rotatingIcon');
+    const albumImg= document.getElementById('albumCoverImage');
+    const bar     = document.getElementById('trackInfoBar');
+    const rWrapper= document.getElementById('rotatingWrapper');
+    if (imgUrl)  { rIcon.src = imgUrl; if(albumImg) albumImg.src = imgUrl; }
+    if (bar)     { bar.textContent = `🎵 ${name||'Spotify'} - ${artist||''}`; bar.classList.add('active'); }
+    if (rWrapper){ rWrapper.style.display = 'block'; rWrapper.classList.add('spotify-mode'); }
+    const rIconEl = document.getElementById('rotatingIcon');
+    if (rIconEl) { rIconEl.classList.remove('paused'); rIconEl.classList.add('rotating'); }
+  }
+
+  // ── URL 직접 입력 ─────────────────────────────────────────────
+  function parseUri(raw) {
+    raw = raw.trim();
+    const m = raw.match(/open\.spotify\.com\/(playlist|album|track|artist)\/([A-Za-z0-9]+)/);
+    if (m) return `spotify:${m[1]}:${m[2]}`;
+    if (/^spotify:(playlist|album|track|artist):[A-Za-z0-9]+$/.test(raw)) return raw;
+    return null;
+  }
+  spotifyLoadBtn && spotifyLoadBtn.addEventListener('click', () => {
+    const uri = parseUri(spotifyUriInput.value);
+    if (uri) loadEmbed(uri);
+    else alert('올바른 Spotify URL을 입력해주세요.');
+  });
+  spotifyUriInput && spotifyUriInput.addEventListener('keydown', e => { if(e.key==='Enter') spotifyLoadBtn.click(); });
+
+  // ── 검색 ─────────────────────────────────────────────────────
+  spotifySearchBtn && spotifySearchBtn.addEventListener('click', doSearch);
+  spotifySearchInput && spotifySearchInput.addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+
+  async function doSearch() {
+    const q = spotifySearchInput.value.trim();
+    if (!q || !accessToken) return;
+    spotifySearchResults.innerHTML = '<div class="spotify-list-loading">검색 중...</div>';
+    try {
+      const data = await spotifyApi('/search', { q, type: 'track,playlist', limit: 20 });
+      const items = [
+        ...(data.tracks?.items  || []).map(t => ({ type:'track',    id:t.id, name:t.name, sub: t.artists?.map(a=>a.name).join(', '), img: t.album?.images?.[2]?.url || t.album?.images?.[0]?.url })),
+        ...(data.playlists?.items||[]).map(p => ({ type:'playlist', id:p.id, name:p.name, sub: `${p.tracks?.total||0}곡`, img: p.images?.[0]?.url })),
+      ];
+      renderList(spotifySearchResults, items);
+    } catch(e) { spotifySearchResults.innerHTML = '<div class="spotify-list-empty">검색 실패</div>'; }
+  }
+
+  // ── 내 플레이리스트 ───────────────────────────────────────────
+  async function loadMyPlaylists() {
+    spotifyMyPlaylists.innerHTML = '<div class="spotify-list-loading">불러오는 중...</div>';
+    try {
+      const data = await spotifyApi('/me/playlists', { limit: 50 });
+      const items = (data.items||[]).map(p => ({
+        type:'playlist', id:p.id, name:p.name,
+        sub: `${p.tracks?.total||0}곡`,
+        img: p.images?.[0]?.url
+      }));
+      renderList(spotifyMyPlaylists, items);
+    } catch(e) { spotifyMyPlaylists.innerHTML = '<div class="spotify-list-empty">불러오기 실패</div>'; }
+  }
+
+  // ── 좋아요 곡 ─────────────────────────────────────────────────
+  async function loadSavedTracks() {
+    spotifySavedTracks.innerHTML = '<div class="spotify-list-loading">불러오는 중...</div>';
+    try {
+      const data = await spotifyApi('/me/tracks', { limit: 50 });
+      const items = (data.items||[]).map(({ track: t }) => ({
+        type:'track', id:t.id, name:t.name,
+        sub: t.artists?.map(a=>a.name).join(', '),
+        img: t.album?.images?.[2]?.url || t.album?.images?.[0]?.url
+      }));
+      renderList(spotifySavedTracks, items);
+    } catch(e) { spotifySavedTracks.innerHTML = '<div class="spotify-list-empty">불러오기 실패</div>'; }
+  }
+
+  // ── 리스트 렌더 ───────────────────────────────────────────────
+  function renderList(container, items) {
+    if (!items.length) { container.innerHTML = '<div class="spotify-list-empty">결과 없음</div>'; return; }
+    container.innerHTML = '';
+    items.forEach(item => {
+      const btn = document.createElement('button');
+      btn.className = 'spotify-list-item';
+      btn.innerHTML = `
+        <img src="${item.img || ''}" onerror="this.style.display='none'" alt="">
+        <div class="spotify-list-item-info">
+          <div class="spotify-list-item-title">${item.name}</div>
+          <div class="spotify-list-item-sub">${item.sub || ''}</div>
+        </div>
+      `;
+      btn.addEventListener('click', () => loadEmbed(`spotify:${item.type}:${item.id}`));
+      container.appendChild(btn);
+    });
+  }
+
+  // ── 로그인/로그아웃 버튼 ─────────────────────────────────────
+  [spotifyLoginBtn, spotifyLoginBigBtn].forEach(btn => btn && btn.addEventListener('click', startLogin));
+  spotifyLogoutBtn && spotifyLogoutBtn.addEventListener('click', onLoggedOut);
+
+  // ── 초기화 (페이지 로드) ─────────────────────────────────────
+  (async function init() {
+    // 1) OAuth 콜백 처리
+    if (window.location.search.includes('code=')) {
+      await handleCallback();
+      return;
+    }
+    // 2) 저장된 토큰 복원
+    if (loadStoredToken()) {
+      await onLoggedIn();
+    }
+  })();
+
+})(); // Spotify IIFE
